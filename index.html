@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeFriendly — AI Resume Optimizer</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+  /* ─── Reset & Base ─── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue-darkest: #042C53;
+    --blue-dark:    #0C447C;
+    --blue-mid:     #185FA5;
+    --blue-soft:    #378ADD;
+    --blue-light:   #B5D4F4;
+    --blue-pale:    #E6F1FB;
+    --green-darkest:#173404;
+    --green-dark:   #27500A;
+    --green-mid:    #3B6D11;
+    --green-soft:   #639922;
+    --green-light:  #C0DD97;
+    --green-pale:   #EAF3DE;
+    --white:        #ffffff;
+    --gray-50:      #F8F9FA;
+    --gray-100:     #F1F3F5;
+    --gray-300:     #CED4DA;
+    --gray-500:     #868E96;
+    --gray-700:     #495057;
+    --gray-900:     #212529;
+    --radius-sm:    6px;
+    --radius-md:    10px;
+    --radius-lg:    16px;
+    --radius-xl:    24px;
+    --shadow-sm:    0 1px 3px rgba(4,44,83,0.08);
+    --shadow-md:    0 4px 16px rgba(4,44,83,0.12);
+    --shadow-lg:    0 12px 40px rgba(4,44,83,0.16);
+    --transition:   0.25s ease;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    color: var(--gray-900);
+    background: var(--white);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { text-decoration: none; color: inherit; }
+  img { display: block; max-width: 100%; }
+
+  /* ─── Navbar ─── */
+  .nav {
+    background: var(--blue-darkest);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .nav-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--white);
+    letter-spacing: -0.3px;
+  }
+  .nav-logo span { color: var(--green-light); }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+  }
+  .nav-links a {
+    color: var(--blue-light);
+    font-size: 14px;
+    font-weight: 400;
+    transition: color var(--transition);
+  }
+  .nav-links a:hover { color: var(--white); }
+  .nav-cta {
+    background: var(--green-soft);
+    color: var(--white);
+    border: none;
+    padding: 8px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background var(--transition);
+  }
+  .nav-cta:hover { background: var(--green-mid); }
+
+  /* ─── Hero ─── */
+  .hero {
+    background: linear-gradient(160deg, var(--blue-darkest) 0%, var(--blue-dark) 100%);
+    padding: 5rem 2rem 6rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 50% 120%, rgba(99,153,34,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(192,221,151,0.12);
+    border: 1px solid rgba(192,221,151,0.35);
+    color: var(--green-light);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 1.75rem;
+    letter-spacing: 0.3px;
+  }
+  .hero-badge-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green-light);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.6; transform: scale(0.85); }
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.2rem, 5vw, 3.4rem);
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 1.25rem;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+    letter-spacing: -0.5px;
+  }
+  .hero h1 em {
+    color: var(--green-light);
+    font-style: normal;
+  }
+  .hero p {
+    color: var(--blue-light);
+    font-size: 1.05rem;
+    max-width: 520px;
+    margin: 0 auto 2.25rem;
+    line-height: 1.7;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-primary {
+    background: var(--green-soft);
+    color: var(--white);
+    border: none;
+    padding: 14px 32px;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background var(--transition), transform 0.15s;
+    box-shadow: 0 4px 12px rgba(99,153,34,0.3);
+  }
+  .btn-primary:hover { background: var(--green-mid); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--blue-light);
+    border: 1px solid rgba(181,212,244,0.4);
+    padding: 14px 32px;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 400;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition);
+  }
+  .btn-secondary:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(181,212,244,0.7);
+    color: var(--white);
+  }
+
+  /* ─── Trust strip ─── */
+  .trust-strip {
+    background: var(--blue-darkest);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--blue-light);
+    font-size: 13px;
+  }
+  .trust-check {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: rgba(99,153,34,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .trust-check svg { width: 9px; height: 9px; stroke: var(--green-light); stroke-width: 2.5; fill: none; }
+
+  /* ─── Stats bar ─── */
+  .stats-bar {
+    background: var(--green-pale);
+    border-bottom: 2px solid var(--green-light);
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    flex-wrap: wrap;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem;
+    color: var(--green-dark);
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-size: 12px;
+    color: var(--green-mid);
+    margin-top: 4px;
+    font-weight: 400;
+  }
+
+  /* ─── Sections ─── */
+  .section {
+    padding: 4rem 2rem;
+    max-width: 940px;
+    margin: 0 auto;
+  }
+  .section-tag {
+    display: inline-block;
+    background: var(--blue-pale);
+    color: var(--blue-mid);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 4px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 400;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.3px;
+  }
+  .section-sub {
+    color: var(--gray-500);
+    font-size: 14px;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ─── App Card ─── */
+  .app-card {
+    background: var(--white);
+    border: 1.5px solid var(--blue-light);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+  .app-header {
+    background: var(--blue-dark);
+    padding: 1.25rem 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .app-header-left {}
+  .app-header-title {
+    color: var(--white);
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .app-header-sub {
+    color: var(--blue-light);
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .app-header-badge {
+    background: rgba(192,221,151,0.15);
+    color: var(--green-light);
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 100px;
+    border: 1px solid rgba(192,221,151,0.3);
+  }
+  .app-body { padding: 1.75rem; }
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  /* ─── Dynamic Textarea ─── */
+  .field-wrap { display: flex; flex-direction: column; }
+  .field-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    transition: color var(--transition);
+  }
+  .field-label.empty { color: var(--blue-mid); }
+  .field-label.filled { color: var(--green-mid); }
+
+  .ta-outer {
+    border-radius: var(--radius-md);
+    transition: box-shadow var(--transition), border-color var(--transition);
+    position: relative;
+  }
+  .ta-outer.empty {
+    box-shadow: 0 0 0 1.5px var(--blue-light);
+  }
+  .ta-outer.focused {
+    box-shadow: 0 0 0 2px var(--blue-mid);
+  }
+  .ta-outer.filled {
+    box-shadow: 0 0 0 2px var(--green-soft);
+  }
+  .ta-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-md);
+    pointer-events: none;
+    z-index: 0;
+    transition: background var(--transition);
+  }
+  .ta-outer.empty  .ta-bg { background: #EFF7FF; }
+  .ta-outer.focused .ta-bg { background: #EAF2FC; }
+  .ta-outer.filled .ta-bg { background: #F4FAF0; }
+
+  .ta-check {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--green-pale);
+    border: 1.5px solid var(--green-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity var(--transition), transform var(--transition);
+  }
+  .ta-check svg { width: 11px; height: 11px; stroke: var(--green-soft); stroke-width: 2.5; fill: none; }
+  .ta-outer.filled .ta-check { opacity: 1; transform: scale(1); }
+
+  textarea {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 160px;
+    resize: vertical;
+    border: none;
+    outline: none;
+    padding: 12px 38px 12px 12px;
+    font-size: 13px;
+    font-family: inherit;
+    background: transparent;
+    color: var(--gray-900);
+    line-height: 1.65;
+    border-radius: var(--radius-md);
+  }
+  textarea::placeholder { color: #93B8D8; }
+
+  .ta-hint {
+    font-size: 11px;
+    margin-top: 5px;
+    height: 16px;
+    transition: color var(--transition);
+  }
+  .ta-hint.empty  { color: #93B8D8; }
+  .ta-hint.filled { color: var(--green-mid); font-weight: 500; }
+
+  /* ─── Run Button ─── */
+  .run-btn {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 15px;
+    background: var(--green-soft);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background var(--transition), transform 0.15s;
+    box-shadow: 0 4px 12px rgba(99,153,34,0.25);
+  }
+  .run-btn:hover:not(:disabled) { background: var(--green-mid); transform: translateY(-1px); }
+  .run-btn:active { transform: translateY(0); }
+  .run-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .spinner {
+    display: inline-block;
+    width: 15px; height: 15px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── Results ─── */
+  .result-box { margin-top: 1.75rem; display: none; }
+  .result-box.visible { display: block; }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+  .score-card {
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    text-align: center;
+  }
+  .score-card.before {
+    background: var(--blue-pale);
+    border: 1px solid var(--blue-light);
+  }
+  .score-card.after, .score-card.kw {
+    background: var(--green-pale);
+    border: 1px solid var(--green-light);
+  }
+  .score-lbl {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .score-card.before .score-lbl { color: var(--blue-mid); }
+  .score-card.after  .score-lbl,
+  .score-card.kw     .score-lbl { color: var(--green-mid); }
+  .score-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    line-height: 1;
+  }
+  .score-card.before .score-val { color: var(--blue-dark); }
+  .score-card.after  .score-val,
+  .score-card.kw     .score-val { color: var(--green-dark); }
+
+  .output-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .output-area {
+    background: #F8FBFF;
+    border: 1.5px solid var(--blue-light);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    font-size: 13px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+    color: var(--gray-900);
+    font-family: inherit;
+  }
+  .output-area::-webkit-scrollbar { width: 4px; }
+  .output-area::-webkit-scrollbar-track { background: transparent; }
+  .output-area::-webkit-scrollbar-thumb { background: var(--blue-light); border-radius: 4px; }
+
+  .dl-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 1rem;
+  }
+  .dl-btn {
+    flex: 1;
+    padding: 11px;
+    border: 1.5px solid var(--blue-mid);
+    border-radius: var(--radius-md);
+    background: transparent;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--blue-mid);
+    font-family: inherit;
+    transition: all var(--transition);
+  }
+  .dl-btn:hover { background: var(--blue-pale); }
+  .dl-btn.paid {
+    border-color: var(--green-soft);
+    color: var(--green-dark);
+  }
+  .dl-btn.paid:hover { background: var(--green-pale); }
+
+  /* ─── Before/After ─── */
+  .ba-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 1rem;
+  }
+  .ba-card {
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+  }
+  .ba-card.before-card {
+    background: var(--blue-pale);
+    border: 1px solid var(--blue-light);
+  }
+  .ba-card.after-card {
+    background: var(--green-pale);
+    border: 1px solid var(--green-light);
+  }
+  .ba-tag {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .before-card .ba-tag { color: var(--blue-mid); }
+  .after-card  .ba-tag { color: var(--green-mid); }
+  .ba-score {
+    font-family: 'DM Serif Display', serif;
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .before-card .ba-score { color: var(--blue-dark); }
+  .after-card  .ba-score { color: var(--green-dark); }
+  .ba-bullets { list-style: none; }
+  .ba-bullets li {
+    font-size: 13px;
+    color: var(--gray-700);
+    padding: 4px 0 4px 18px;
+    position: relative;
+  }
+  .ba-bullets li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--gray-300);
+  }
+  .after-card .ba-bullets li::before { color: var(--green-soft); }
+
+  /* ─── Features ─── */
+  .feat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+    gap: 1rem;
+  }
+  .feat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-top: 3px solid var(--blue-mid);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    transition: box-shadow var(--transition), transform var(--transition);
+  }
+  .feat-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+  .feat-icon {
+    width: 40px; height: 40px;
+    border-radius: var(--radius-sm);
+    background: var(--green-pale);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+  .feat-icon svg {
+    width: 18px; height: 18px;
+    stroke: var(--green-mid);
+    stroke-width: 2;
+    fill: none;
+  }
+  .feat-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--blue-dark);
+    margin-bottom: 6px;
+  }
+  .feat-card p {
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.55;
+  }
+
+  /* ─── Steps ─── */
+  .steps-wrap {
+    background: var(--blue-darkest);
+    border-radius: var(--radius-xl);
+    padding: 2.5rem 2rem;
+    margin-top: 2.5rem;
+  }
+  .steps-title {
+    color: var(--white);
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.4rem;
+    font-weight: 400;
+    text-align: center;
+    margin-bottom: 2rem;
+    letter-spacing: -0.2px;
+  }
+  .steps-row {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 1.5rem;
+  }
+  .step-item { text-align: center; }
+  .step-num {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--green-soft);
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 12px rgba(99,153,34,0.3);
+  }
+  .step-item h3 {
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .step-item p {
+    color: var(--blue-light);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  /* ─── Pricing ─── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+    gap: 1.25rem;
+  }
+  .price-card {
+    background: var(--white);
+    border: 1.5px solid var(--gray-100);
+    border-radius: var(--radius-xl);
+    padding: 2rem 1.75rem;
+    position: relative;
+    transition: box-shadow var(--transition);
+  }
+  .price-card:hover { box-shadow: var(--shadow-md); }
+  .price-card.popular {
+    border-color: var(--blue-mid);
+    box-shadow: 0 0 0 1px var(--blue-mid), var(--shadow-md);
+  }
+  .popular-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--blue-mid);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 14px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .price-plan {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+  }
+  .price-amount {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.5rem;
+    color: var(--blue-dark);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .price-period {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-bottom: 1.5rem;
+  }
+  .price-features {
+    list-style: none;
+    margin-bottom: 1.5rem;
+  }
+  .price-features li {
+    font-size: 13px;
+    color: var(--gray-700);
+    padding: 5px 0 5px 20px;
+    position: relative;
+  }
+  .price-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--green-soft);
+    font-weight: 700;
+    font-size: 12px;
+  }
+  .price-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition);
+  }
+  .price-btn.outline {
+    background: transparent;
+    border: 1.5px solid var(--blue-mid);
+    color: var(--blue-mid);
+  }
+  .price-btn.outline:hover { background: var(--blue-pale); }
+  .price-btn.solid {
+    background: var(--green-soft);
+    border: none;
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(99,153,34,0.25);
+  }
+  .price-btn.solid:hover { background: var(--green-mid); }
+
+  /* ─── FAQ ─── */
+  .faq-list { display: flex; flex-direction: column; gap: 1px; }
+  .faq-item {
+    background: var(--white);
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .faq-q {
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    padding: 1.1rem 1.25rem;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--gray-900);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    font-family: inherit;
+    transition: background var(--transition);
+  }
+  .faq-q:hover { background: var(--gray-50); }
+  .faq-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--blue-pale);
+    color: var(--blue-mid);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 300;
+    flex-shrink: 0;
+    transition: transform var(--transition), background var(--transition);
+    line-height: 1;
+  }
+  .faq-item.open .faq-icon {
+    transform: rotate(45deg);
+    background: var(--blue-mid);
+    color: var(--white);
+  }
+  .faq-a {
+    display: none;
+    padding: 0 1.25rem 1.1rem;
+    font-size: 13px;
+    color: var(--gray-500);
+    line-height: 1.65;
+  }
+  .faq-item.open .faq-a { display: block; }
+
+  /* ─── CTA Banner ─── */
+  .cta-section {
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue-darkest) 100%);
+    padding: 4rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 50% 80% at 50% 110%, rgba(99,153,34,0.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.5rem,3vw,2.2rem);
+    color: var(--white);
+    font-weight: 400;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.3px;
+  }
+  .cta-section p {
+    color: var(--blue-light);
+    font-size: 15px;
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cta-note {
+    font-size: 12px;
+    color: var(--blue-light);
+    margin-top: 12px;
+    opacity: 0.7;
+  }
+
+  /* ─── Footer ─── */
+  .footer {
+    background: var(--blue-darkest);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+  .footer-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--white);
+  }
+  .footer-logo span { color: var(--green-light); }
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+  .footer-links a {
+    color: var(--blue-light);
+    font-size: 13px;
+    transition: color var(--transition);
+  }
+  .footer-links a:hover { color: var(--white); }
+  .footer-copy {
+    color: var(--blue-soft);
+    font-size: 12px;
+    opacity: 0.6;
+  }
+
+  /* ─── Toast ─── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--green-dark);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    box-shadow: var(--shadow-lg);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 640px) {
+    .two-col, .steps-row, .ba-grid, .score-grid { grid-template-columns: 1fr; }
+    .hero { padding: 3rem 1.25rem 4rem; }
+    .hero h1 { font-size: 2rem; }
+    .stats-bar, .trust-strip { gap: 1.25rem; }
+    .nav-links a { display: none; }
+    .footer { flex-direction: column; text-align: center; }
+    .footer-links { justify-content: center; }
+    .dl-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ─── Navbar ─── -->
+<nav class="nav">
+  <div class="nav-logo">Resume<span>Friendly</span></div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <button class="nav-cta" onclick="scrollToApp()">Get started free</button>
+  </div>
+</nav>
+
+<!-- ─── Hero ─── -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    AI-powered &nbsp;·&nbsp; ATS optimised &nbsp;·&nbsp; Free to start
+  </div>
+  <h1>Your resume deserves a <em>fighting chance</em></h1>
+  <p>Paste your resume and a job description. Get a tailored, ATS-optimised resume with real keyword matching — in under 30 seconds.</p>
+  <div class="hero-btns">
+    <button class="btn-primary" onclick="scrollToApp()">Improve my resume</button>
+    <button class="btn-secondary" onclick="loadSample()">Try with sample resume</button>
+  </div>
+</section>
+
+<!-- ─── Trust Strip ─── -->
+<div class="trust-strip">
+  <div class="trust-item">
+    <div class="trust-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+    No data sold
+  </div>
+  <div class="trust-item">
+    <div class="trust-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+    ~20s results
+  </div>
+  <div class="trust-item">
+    <div class="trust-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+    Free to start
+  </div>
+  <div class="trust-item">
+    <div class="trust-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+    No credit card needed
+  </div>
+</div>
+
+<!-- ─── Stats Bar ─── -->
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">~20s</div><div class="stat-lbl">Avg. processing time</div></div>
+  <div class="stat"><div class="stat-num">100%</div><div class="stat-lbl">Job-specific tailoring</div></div>
+  <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">Free resumes / month</div></div>
+  <div class="stat"><div class="stat-num">₹0</div><div class="stat-lbl">Card required</div></div>
+</div>
+
+<!-- ─── App Section ─── -->
+<div class="section" id="app-section">
+  <div class="section-tag">Resume optimizer</div>
+  <h2>Optimise your resume now</h2>
+  <p class="section-sub">Fields glow green once filled — then hit optimise and watch your score jump.</p>
+
+  <div class="app-card">
+    <div class="app-header">
+      <div class="app-header-left">
+        <div class="app-header-title">ResumeFriendly Optimizer</div>
+        <div class="app-header-sub">Powered by Claude AI &nbsp;·&nbsp; ATS-ready output</div>
+      </div>
+      <div class="app-header-badge">Beta — 2 free/month</div>
+    </div>
+    <div class="app-body">
+      <div class="two-col">
+        <!-- Resume Field -->
+        <div class="field-wrap">
+          <div class="field-label empty" id="lbl-resume">Your resume</div>
+          <div class="ta-outer empty" id="wrap-resume">
+            <div class="ta-bg"></div>
+            <div class="ta-check">
+              <svg viewBox="0 0 14 14"><polyline points="2 7 6 11 12 3"/></svg>
+            </div>
+            <textarea
+              id="resume-input"
+              placeholder="Paste your resume here..."
+              oninput="handleInput('resume')"
+              onfocus="handleFocus('resume')"
+              onblur="handleBlur('resume')"
+            ></textarea>
+          </div>
+          <div class="ta-hint empty" id="hint-resume">Waiting for your resume...</div>
+        </div>
+        <!-- Job Field -->
+        <div class="field-wrap">
+          <div class="field-label empty" id="lbl-job">Job description</div>
+          <div class="ta-outer empty" id="wrap-job">
+            <div class="ta-bg"></div>
+            <div class="ta-check">
+              <svg viewBox="0 0 14 14"><polyline points="2 7 6 11 12 3"/></svg>
+            </div>
+            <textarea
+              id="job-input"
+              placeholder="Paste the job description here..."
+              oninput="handleInput('job')"
+              onfocus="handleFocus('job')"
+              onblur="handleBlur('job')"
+            ></textarea>
+          </div>
+          <div class="ta-hint empty" id="hint-job">Waiting for job description...</div>
+        </div>
+      </div>
+
+      <button class="run-btn" id="run-btn" onclick="optimise()">Optimise my resume</button>
+
+      <!-- Results -->
+      <div class="result-box" id="result-box">
+        <div class="score-grid">
+          <div class="score-card before">
+            <div class="score-lbl">Before ATS</div>
+            <div class="score-val" id="sc-before">—</div>
+          </div>
+          <div class="score-card after">
+            <div class="score-lbl">After ATS</div>
+            <div class="score-val" id="sc-after">—</div>
+          </div>
+          <div class="score-card kw">
+            <div class="score-lbl">Keywords</div>
+            <div class="score-val" id="sc-kw">—</div>
+          </div>
+        </div>
+        <div class="output-label">Optimised resume</div>
+        <div class="output-area" id="output-area"></div>
+        <div class="dl-row">
+          <button class="dl-btn" onclick="downloadTxt()">Download .txt (free)</button>
+          <button class="dl-btn paid" onclick="buyDownload('pdf')">Download PDF — ₹49</button>
+          <button class="dl-btn paid" onclick="buyDownload('docx')">Download DOCX — ₹49</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Before / After ─── -->
+<div class="section">
+  <div class="section-tag">Real results</div>
+  <h2>See the difference instantly</h2>
+  <p class="section-sub">Real ATS score improvement on a real resume — no fake numbers.</p>
+  <div class="ba-grid">
+    <div class="ba-card before-card">
+      <div class="ba-tag">Before — generic resume</div>
+      <div class="ba-score">34</div>
+      <ul class="ba-bullets">
+        <li>34% keyword match</li>
+        <li>22% impact bullets</li>
+        <li>Weak action verbs</li>
+        <li>Missing role keywords</li>
+        <li>No quantified results</li>
+      </ul>
+    </div>
+    <div class="ba-card after-card">
+      <div class="ba-tag">After — ResumeFriendly</div>
+      <div class="ba-score">91</div>
+      <ul class="ba-bullets">
+        <li>91% keyword match</li>
+        <li>87% impact bullets</li>
+        <li>Strong action verbs</li>
+        <li>ATS-ready formatting</li>
+        <li>Quantified achievements</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Features ─── -->
+<div class="section" id="features">
+  <div class="section-tag">Features</div>
+  <h2>Everything you need to get hired</h2>
+  <p class="section-sub">Not just keyword stuffing — real, intelligent resume improvement.</p>
+  <div class="feat-grid">
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <h3>ATS keyword matching</h3>
+      <p>Role-critical keywords woven naturally into your resume so ATS filters stop rejecting you before a human reads it.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      <h3>Impactful bullets</h3>
+      <p>Every weak bullet rewritten with stronger action verbs, quantified results, and clearer impact language.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h3>Genuine ATS score</h3>
+      <p>Real before/after score so you can see the improvement. Already optimal? We'll tell you — no fake improvements.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <h3>PDF & DOCX export</h3>
+      <p>Download a professionally typeset PDF or editable Word file ready to send to recruiters.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      </div>
+      <h3>Smart page length</h3>
+      <p>Right length enforced automatically — 1 page for early career, 2 pages for senior roles.</p>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+      </div>
+      <h3>No data sold</h3>
+      <p>Your resume is only used to generate the optimised version. Never shared with or sold to third parties.</p>
+    </div>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps-wrap">
+    <div class="steps-title">Dead simple. Effortlessly powerful.</div>
+    <div class="steps-row">
+      <div class="step-item">
+        <div class="step-num">01</div>
+        <h3>Paste resume & job</h3>
+        <p>Drop in your resume and the job description. Upload a PDF or paste plain text.</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">02</div>
+        <h3>AI runs the tailoring</h3>
+        <p>We find the gaps, rewrite bullets with stronger verbs, inject keywords, and tailor your whole resume.</p>
+      </div>
+      <div class="step-item">
+        <div class="step-num">03</div>
+        <h3>Download & apply</h3>
+        <p>Get your improved resume as PDF or DOCX. See your score jump. Apply with confidence.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Pricing ─── -->
+<div class="section" id="pricing">
+  <div class="section-tag">Pricing</div>
+  <h2>Simple, honest pricing</h2>
+  <p class="section-sub">Free to try. Pay only when you want to download.</p>
+  <div class="pricing-grid">
+    <div class="price-card">
+      <div class="price-plan">Free</div>
+      <div class="price-amount">₹0</div>
+      <div class="price-period">forever</div>
+      <ul class="price-features">
+        <li>2 resume optimisations / month</li>
+        <li>Full ATS score before &amp; after</li>
+        <li>Keyword match analysis</li>
+        <li>Download as .txt</li>
+        <li>No credit card needed</li>
+      </ul>
+      <button class="price-btn outline" onclick="scrollToApp()">Get started free</button>
+    </div>
+    <div class="price-card popular">
+      <div class="popular-badge">Most popular</div>
+      <div class="price-plan">One-time download</div>
+      <div class="price-amount">₹49</div>
+      <div class="price-period">per download · no subscription</div>
+      <ul class="price-features">
+        <li>Everything in Free</li>
+        <li>Download as PDF</li>
+        <li>Download as DOCX</li>
+        <li>Professional typesetting</li>
+        <li>No auto-renewal ever</li>
+      </ul>
+      <button class="price-btn solid" onclick="scrollToApp()">Start optimising</button>
+    </div>
+    <div class="price-card">
+      <div class="price-plan">Pro</div>
+      <div class="price-amount">₹299</div>
+      <div class="price-period">per month</div>
+      <ul class="price-features">
+        <li>Unlimited optimisations</li>
+        <li>Unlimited PDF &amp; DOCX downloads</li>
+        <li>Priority AI processing</li>
+        <li>Cover letter generator</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <button class="price-btn outline" onclick="scrollToApp()">Try free first</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FAQ ─── -->
+<div class="section" id="faq">
+  <div class="section-tag">FAQ</div>
+  <h2>Common questions</h2>
+  <p class="section-sub">Everything you need to know before you start.</p>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is it really free to start?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Yes. You get 2 resume optimisations every month at no cost. No credit card needed. You only pay if you want to download the final PDF or DOCX.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Will my resume actually pass ATS scanners?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">ResumeFriendly rewrites your resume to match the exact keywords and structure ATS systems look for in the job description. It can't guarantee every system, but our users consistently see 30–60 point score improvements.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Is my resume data private?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">Your resume is only used to generate the optimised version. We do not sell or share your data with third parties — ever.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What payment methods are supported?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">All major cards, UPI, net banking, and wallets via Razorpay — PCI-DSS compliant. We never store your card details.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        What does the ₹49 one-time plan include?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">₹49 gives you 1 download credit — no subscription, no auto-renewal. Perfect if you just need it once. Download as PDF or DOCX, whichever you prefer.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        Can I get a refund?
+        <span class="faq-icon">+</span>
+      </button>
+      <div class="faq-a">If you're not satisfied with the output, contact us at support@resumefriendly.in within 24 hours of purchase and we'll issue a full refund, no questions asked.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CTA ─── -->
+<section class="cta-section">
+  <h2>Ready to land more interviews?</h2>
+  <p>Join hundreds of job seekers already using ResumeFriendly to get past ATS filters and get noticed by recruiters.</p>
+  <button class="btn-primary" onclick="scrollToApp()">Claim your 2 free resumes</button>
+  <div class="cta-note">No credit card required &nbsp;·&nbsp; Cancel anytime</div>
+</section>
+
+<!-- ─── Footer ─── -->
+<footer class="footer">
+  <div class="footer-logo">Resume<span>Friendly</span></div>
+  <div class="footer-links">
+    <a href="#">Privacy policy</a>
+    <a href="#">Terms</a>
+    <a href="#">Refund policy</a>
+    <a href="#">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 ResumeFriendly &nbsp;·&nbsp; Powered by Razorpay</div>
+</footer>
+
+<!-- ─── Toast ─── -->
+<div class="toast" id="toast"></div>
+
+<!-- ─── JavaScript ─── -->
+<script>
+  /* ── Config ── */
+  const RAZORPAY_KEY = 'rzp_test_YOUR_KEY_HERE'; // Replace with your Razorpay key
+
+  /* ── Textarea dynamic colour ── */
+  const focusedState = { resume: false, job: false };
+
+  function handleFocus(id) {
+    focusedState[id] = true;
+    const wrap = document.getElementById('wrap-' + id);
+    const val = document.getElementById(id + '-input').value.trim();
+    if (!val) wrap.className = 'ta-outer focused';
+  }
+
+  function handleBlur(id) {
+    focusedState[id] = false;
+    const val = document.getElementById(id + '-input').value.trim();
+    document.getElementById('wrap-' + id).className = val ? 'ta-outer filled' : 'ta-outer empty';
+  }
+
+  function handleInput(id) {
+    const val = document.getElementById(id + '-input').value.trim();
+    const wrap  = document.getElementById('wrap-' + id);
+    const lbl   = document.getElementById('lbl-' + id);
+    const hint  = document.getElementById('hint-' + id);
+    if (val) {
+      wrap.className = 'ta-outer filled';
+      lbl.className  = 'field-label filled';
+      hint.className = 'ta-hint filled';
+      hint.textContent = id === 'resume' ? 'Resume ready ✓' : 'Job description ready ✓';
+    } else {
+      wrap.className = focusedState[id] ? 'ta-outer focused' : 'ta-outer empty';
+      lbl.className  = 'field-label empty';
+      hint.className = 'ta-hint empty';
+      hint.textContent = id === 'resume' ? 'Waiting for your resume...' : 'Waiting for job description...';
+    }
+  }
+
+  /* ── Sample data ── */
+  const SAMPLE_RESUME = `Alex Johnson
+alex@email.com | linkedin.com/in/alexj | +91 98765 43210
+
+EXPERIENCE
+Software Engineer — Acme Corp (2021–2024)
+• Worked on backend systems
+• Helped with database tasks
+• Participated in code reviews
+• Did some cloud work
+
+EDUCATION
+B.Tech Computer Science — VIT University (2017–2021)
+
+SKILLS
+Python, SQL, Some cloud stuff, Git`;
+
+  const SAMPLE_JOB = `We are looking for a Senior Backend Engineer with:
+• 3+ years Python experience
+• Strong SQL and PostgreSQL skills
+• AWS or GCP cloud infrastructure experience
+• Experience with CI/CD pipelines and code reviews
+• Ability to design and scale distributed systems
+• Strong problem-solving and communication skills`;
+
+  function loadSample() {
+    document.getElementById('resume-input').value = SAMPLE_RESUME;
+    document.getElementById('job-input').value = SAMPLE_JOB;
+    handleInput('resume');
+    handleInput('job');
+    scrollToApp();
+  }
+
+  function scrollToApp() {
+    document.getElementById('app-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ── AI Optimise ── */
+  async function optimise() {
+    const resume = document.getElementById('resume-input').value.trim();
+    const job    = document.getElementById('job-input').value.trim();
+    if (!resume || !job) {
+      showToast('Please paste both your resume and the job description.');
+      return;
+    }
+
+    const btn = document.getElementById('run-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Optimising your resume...';
+
+    const prompt = `You are an expert resume writer and ATS optimization specialist.
+
+Given this resume and job description, return ONLY a valid JSON object (no markdown, no backticks, no extra text) with exactly these keys:
+{
+  "ats_before": <integer 0-100 estimating original ATS score>,
+  "ats_after": <integer 0-100 estimating optimised ATS score>,
+  "keyword_match": <integer 0-100 percentage of job keywords matched after optimisation>,
+  "optimised_resume": "<full optimised resume as plain text, using \\n for line breaks>"
+}
+
+Rules:
+- Rewrite weak bullet points with strong action verbs and quantified results where possible
+- Naturally inject missing keywords from the job description
+- Keep the same candidate name, contact info, and education
+- Do not invent fake companies, titles, or experience
+- Be honest: if resume is already strong, reflect that in the scores
+- Keep formatting clean and ATS-friendly (no tables, columns, or special characters)
+
+RESUME:
+${resume}
+
+JOB DESCRIPTION:
+${job}`;
+
+    try {
+      // NOTE: In production, call /api/optimise (your backend) instead of Anthropic directly.
+      // This keeps your API key secure. See api/optimise.js in the deployment guide.
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      if (!res.ok) throw new Error('API error ' + res.status);
+      const data = await res.json();
+      const raw  = data.content.map(i => i.text || '').join('');
+      const clean = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(clean);
+
+      document.getElementById('sc-before').textContent = Math.round(parsed.ats_before);
+      document.getElementById('sc-after').textContent  = Math.round(parsed.ats_after);
+      document.getElementById('sc-kw').textContent     = Math.round(parsed.keyword_match) + '%';
+      document.getElementById('output-area').textContent = parsed.optimised_resume;
+
+      const rb = document.getElementById('result-box');
+      rb.className = 'result-box visible';
+      rb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast('Resume optimised successfully!');
+    } catch (err) {
+      console.error(err);
+      showToast('Something went wrong. Please try again.');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = 'Optimise my resume';
+  }
+
+  /* ── Download TXT (free) ── */
+  function downloadTxt() {
+    const text = document.getElementById('output-area').textContent;
+    if (!text) { showToast('Please optimise your resume first.'); return; }
+    const a = document.createElement('a');
+    a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+    a.download = 'resumefriendly-optimised.txt';
+    a.click();
+    showToast('Downloaded as .txt!');
+  }
+
+  /* ── Razorpay Payment ── */
+  async function buyDownload(format) {
+    const text = document.getElementById('output-area').textContent;
+    if (!text) { showToast('Please optimise your resume first.'); return; }
+
+    try {
+      // In production: call /api/payment to create order securely on your backend
+      // const orderRes = await fetch('/api/payment', { method: 'POST' });
+      // const order = await orderRes.json();
+
+      // For demo: inline order creation (replace with backend call in production)
+      const options = {
+        key: RAZORPAY_KEY,
+        amount: 4900,            // ₹49 in paise
+        currency: 'INR',
+        name: 'ResumeFriendly',
+        description: 'Resume Download — ' + format.toUpperCase(),
+        image: '',
+        // order_id: order.id,   // Uncomment when using backend
+        handler: function(response) {
+          // Payment successful
+          showToast('Payment successful! Downloading your ' + format.toUpperCase() + '...');
+          if (format === 'pdf') generatePDF(text);
+          if (format === 'docx') generateDOCX(text);
+        },
+        prefill: {
+          name: '',
+          email: '',
+          contact: ''
+        },
+        theme: {
+          color: '#185FA5'
+        },
+        modal: {
+          ondismiss: function() {
+            showToast('Payment cancelled.');
+          }
+        }
+      };
+
+      const rzp = new Razorpay(options);
+      rzp.on('payment.failed', function(response) {
+        showToast('Payment failed. Please try again.');
+      });
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      showToast('Could not initiate payment. Please try again.');
+    }
+  }
+
+  /* ── Generate PDF (client-side basic) ── */
+  function generatePDF(text) {
+    // Basic print-to-PDF approach
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html>
+<html><head><title>ResumeFriendly — Optimised Resume</title>
+<style>
+  body { font-family: Arial, sans-serif; font-size: 12px; line-height: 1.6; padding: 2cm; max-width: 800px; margin: 0 auto; color: #212529; }
+  pre { white-space: pre-wrap; font-family: Arial, sans-serif; }
+</style></head>
+<body><pre>${text}</pre>
+<script>window.onload=function(){window.print();window.close();}<\/script>
+</body></html>`);
+    win.document.close();
+  }
+
+  /* ── Generate DOCX (plain text fallback) ── */
+  function generateDOCX(text) {
+    // Basic .txt with .docx extension — for full DOCX use docx.js on backend
+    const blob = new Blob([text], { type: 'application/msword' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'resumefriendly-optimised.docx';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  /* ── FAQ toggle ── */
+  function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  /* ── Toast ── */
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+</script>
+</body>
+</html>

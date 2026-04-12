@@ -1,0 +1,25 @@
+{
+  "name": "resumefriendly",
+  "version": "1.0.0",
+  "description": "AI-powered resume optimizer with ATS scoring and Razorpay payments",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "install-all": "npm install"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.3",
+    "razorpay": "^2.9.6"
+  },
+  "devDependencies": {
+    "vercel": "^34.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "ResumeFriendly",
+  "license": "MIT",
+  "main": "index.js",
+  "keywords": []
+}

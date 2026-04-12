@@ -1,0 +1,22 @@
+# ─── Secret keys — NEVER upload these to GitHub ──────────
+.env
+.env.local
+.env.development
+.env.production
+
+# ─── Installed packages — too large to upload ────────────
+node_modules/
+
+# ─── Vercel build output ─────────────────────────────────
+.vercel
+.next
+
+# ─── OS junk files ───────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Editor files ────────────────────────────────────────
+.vscode/
+.idea/
+*.log
