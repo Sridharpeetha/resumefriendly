@@ -1293,7 +1293,7 @@
 <!-- ─── JavaScript ─── -->
 <script>
   /* ── Config ── */
-  const RAZORPAY_KEY = 'rzp_test_YOUR_KEY_HERE'; // Replace with your Razorpay key
+  const RAZORPAY_KEY = 'rzp_test_ScYEWEIxBnNwiq'; // Replace with your Razorpay key
 
   /* ── Textarea dynamic colour ── */
   const focusedState = { resume: false, job: false };
@@ -1406,7 +1406,12 @@ ${job}`;
     try {
       // NOTE: In production, call /api/optimise (your backend) instead of Anthropic directly.
       // This keeps your API key secure. See api/optimise.js in the deployment guide.
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('const res = await fetch('/api/optimise', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ resume, job })
+});
+const parsed = await res.json();', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
