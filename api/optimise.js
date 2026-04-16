@@ -42,10 +42,10 @@ Return ONLY valid JSON.
 }
 
 Rules:
-1. Keep same name, phone, email.
-2. Keep same dates and companies.
+1. Keep same personal details.
+2. Keep same dates and company names.
 3. Improve bullet points professionally.
-4. Add job keywords naturally.
+4. Add relevant keywords naturally.
 5. No fake experience.
 6. ATS friendly format.
 7. No markdown.
@@ -75,7 +75,7 @@ function parseModelResponse(rawText) {
   const data = JSON.parse(text);
 
   if (!data.optimised_resume) {
-    throw new Error('Invalid AI JSON.');
+    throw new Error('Invalid AI response.');
   }
 
   return {
@@ -92,7 +92,7 @@ async function callGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY missing.');
+    throw new Error('Gemini unavailable');
   }
 
   const response = await fetch(
@@ -123,7 +123,7 @@ async function callGemini(prompt) {
 
   if (!response.ok) {
     const err = new Error(
-      data?.error?.message || 'Gemini failed.'
+      data?.error?.message || 'Gemini busy'
     );
     err.status = response.status;
     throw err;
@@ -135,7 +135,7 @@ async function callGemini(prompt) {
     .trim();
 
   if (!text) {
-    throw new Error('Gemini empty response.');
+    throw new Error('Gemini empty response');
   }
 
   return text;
@@ -147,7 +147,7 @@ async function callClaude(prompt) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
 
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY missing.');
+    throw new Error('Claude unavailable');
   }
 
   const client = new Anthropic({ apiKey });
@@ -169,13 +169,13 @@ async function callClaude(prompt) {
     .trim();
 
   if (!text) {
-    throw new Error('Claude empty response.');
+    throw new Error('Claude empty response');
   }
 
   return text;
 }
 
-/* ---------------- RETRY + FALLBACK ---------------- */
+/* ---------------- PROVIDER FLOW ---------------- */
 
 async function tryGemini(prompt) {
   let lastError;
@@ -193,21 +193,33 @@ async function tryGemini(prompt) {
 }
 
 async function generateAI(prompt) {
-  try {
-    console.log('Trying Gemini...');
-    return await tryGemini(prompt);
-  } catch (err) {
-    console.log('Gemini failed. Switching to Claude...');
+  /* 1. Gemini first */
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      console.log('Trying Gemini...');
+      return await tryGemini(prompt);
+    } catch (err) {
+      console.log('Gemini failed');
+    }
   }
 
-  try {
-    return await callClaude(prompt);
-  } catch (err) {
-    throw err;
+  /* 2. Claude fallback only if key exists */
+  if (process.env.ANTHROPIC_API_KEY) {
+    try {
+      console.log('Trying Claude...');
+      return await callClaude(prompt);
+    } catch (err) {
+      console.log('Claude failed');
+    }
   }
+
+  /* 3. Clean final message */
+  throw new Error(
+    'AI servers are busy right now. Please try again shortly.'
+  );
 }
 
-/* ---------------- API HANDLER ---------------- */
+/* ---------------- API ---------------- */
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -228,7 +240,7 @@ export default async function handler(req, res) {
 
     if (resume.length < 50) {
       return res.status(400).json({
-        error: 'Resume too short.'
+        error: 'Resume content too short.'
       });
     }
 
@@ -259,7 +271,7 @@ export default async function handler(req, res) {
 
     if (err instanceof SyntaxError) {
       return res.status(500).json({
-        error: 'AI returned invalid JSON.'
+        error: 'AI returned invalid format.'
       });
     }
 
@@ -268,7 +280,7 @@ export default async function handler(req, res) {
       err.status === 403
     ) {
       return res.status(500).json({
-        error: 'Invalid API key.'
+        error: 'AI authentication failed.'
       });
     }
 
