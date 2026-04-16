@@ -1,11 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk';
 
 const MAX_INPUT_CHARS = 20000;
-const ANTHROPIC_MODEL =
-  process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
 
 const GEMINI_MODEL =
   process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+
+const ANTHROPIC_MODEL =
+  process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
+
+/* ---------------- HELPERS ---------------- */
 
 function cleanInput(value) {
   return typeof value === 'string'
@@ -21,13 +24,15 @@ function clampScore(value) {
   return Math.max(0, Math.min(100, Math.round(num)));
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function buildPrompt(resume, job) {
   return `
-You are an expert resume writer and ATS optimisation specialist.
+You are an expert ATS resume optimizer.
 
 Return ONLY valid JSON.
-No markdown.
-No explanation.
 
 {
   "ats_before": number,
@@ -37,11 +42,13 @@ No explanation.
 }
 
 Rules:
-1. Keep same name, email, phone, company names, dates.
-2. Improve bullet points professionally.
-3. Add relevant keywords naturally.
-4. Do not invent fake experience.
-5. ATS friendly formatting.
+1. Keep same name, phone, email.
+2. Keep same dates and companies.
+3. Improve bullet points professionally.
+4. Add job keywords naturally.
+5. No fake experience.
+6. ATS friendly format.
+7. No markdown.
 
 RESUME:
 ${resume}
@@ -51,37 +58,35 @@ ${job}
 `;
 }
 
-async function callAnthropic(prompt) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY missing.');
-  }
-
-  const client = new Anthropic({ apiKey });
-
-  const message = await client.messages.create({
-    model: ANTHROPIC_MODEL,
-    max_tokens: 2200,
-    messages: [
-      {
-        role: 'user',
-        content: prompt
-      }
-    ]
-  });
-
-  const text = message.content
-    ?.map((block) => ('text' in block ? block.text : ''))
-    .join('')
+function parseModelResponse(rawText) {
+  let text = String(rawText || '')
+    .replace(/^```json/i, '')
+    .replace(/^```/i, '')
+    .replace(/```$/i, '')
     .trim();
 
-  if (!text) {
-    throw new Error('Anthropic returned empty response.');
+  const firstBrace = text.indexOf('{');
+  const lastBrace = text.lastIndexOf('}');
+
+  if (firstBrace !== -1 && lastBrace !== -1) {
+    text = text.slice(firstBrace, lastBrace + 1);
   }
 
-  return text;
+  const data = JSON.parse(text);
+
+  if (!data.optimised_resume) {
+    throw new Error('Invalid AI JSON.');
+  }
+
+  return {
+    ats_before: clampScore(data.ats_before),
+    ats_after: clampScore(data.ats_after),
+    keyword_match: clampScore(data.keyword_match),
+    optimised_resume: String(data.optimised_resume).trim()
+  };
 }
+
+/* ---------------- GEMINI ---------------- */
 
 async function callGemini(prompt) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -118,7 +123,7 @@ async function callGemini(prompt) {
 
   if (!response.ok) {
     const err = new Error(
-      data?.error?.message || 'Gemini request failed.'
+      data?.error?.message || 'Gemini failed.'
     );
     err.status = response.status;
     throw err;
@@ -130,34 +135,79 @@ async function callGemini(prompt) {
     .trim();
 
   if (!text) {
-    throw new Error('Gemini returned empty response.');
+    throw new Error('Gemini empty response.');
   }
 
   return text;
 }
 
-function parseModelResponse(rawText) {
-  const clean = rawText
-    .replace(/^```json/i, '')
-    .replace(/^```/i, '')
-    .replace(/```$/i, '')
-    .trim();
+/* ---------------- CLAUDE ---------------- */
 
-  const result = JSON.parse(clean);
+async function callClaude(prompt) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
 
-  if (
-    typeof result.optimised_resume !== 'string'
-  ) {
-    throw new Error('Invalid AI JSON structure.');
+  if (!apiKey) {
+    throw new Error('ANTHROPIC_API_KEY missing.');
   }
 
-  return {
-    ats_before: clampScore(result.ats_before),
-    ats_after: clampScore(result.ats_after),
-    keyword_match: clampScore(result.keyword_match),
-    optimised_resume: result.optimised_resume.trim()
-  };
+  const client = new Anthropic({ apiKey });
+
+  const message = await client.messages.create({
+    model: ANTHROPIC_MODEL,
+    max_tokens: 2200,
+    messages: [
+      {
+        role: 'user',
+        content: prompt
+      }
+    ]
+  });
+
+  const text = message.content
+    ?.map((block) => ('text' in block ? block.text : ''))
+    .join('')
+    .trim();
+
+  if (!text) {
+    throw new Error('Claude empty response.');
+  }
+
+  return text;
 }
+
+/* ---------------- RETRY + FALLBACK ---------------- */
+
+async function tryGemini(prompt) {
+  let lastError;
+
+  for (let i = 0; i < 2; i++) {
+    try {
+      return await callGemini(prompt);
+    } catch (err) {
+      lastError = err;
+      await sleep(1500);
+    }
+  }
+
+  throw lastError;
+}
+
+async function generateAI(prompt) {
+  try {
+    console.log('Trying Gemini...');
+    return await tryGemini(prompt);
+  } catch (err) {
+    console.log('Gemini failed. Switching to Claude...');
+  }
+
+  try {
+    return await callClaude(prompt);
+  } catch (err) {
+    throw err;
+  }
+}
+
+/* ---------------- API HANDLER ---------------- */
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -178,7 +228,7 @@ export default async function handler(req, res) {
 
     if (resume.length < 50) {
       return res.status(400).json({
-        error: 'Resume content too short.'
+        error: 'Resume too short.'
       });
     }
 
@@ -199,18 +249,7 @@ export default async function handler(req, res) {
 
     const prompt = buildPrompt(resume, job);
 
-    let rawText = '';
-
-    if (process.env.GEMINI_API_KEY) {
-      rawText = await callGemini(prompt);
-    } else if (process.env.ANTHROPIC_API_KEY) {
-      rawText = await callAnthropic(prompt);
-    } else {
-      return res.status(500).json({
-        error:
-          'No AI key found. Add GEMINI_API_KEY or ANTHROPIC_API_KEY.'
-      });
-    }
+    const rawText = await generateAI(prompt);
 
     const result = parseModelResponse(rawText);
 
@@ -224,15 +263,22 @@ export default async function handler(req, res) {
       });
     }
 
-    if (err.status === 401 || err.status === 403) {
+    if (
+      err.status === 401 ||
+      err.status === 403
+    ) {
       return res.status(500).json({
         error: 'Invalid API key.'
       });
     }
 
-    if (err.status === 429) {
-      return res.status(429).json({
-        error: 'Too many requests. Try later.'
+    if (
+      err.status === 429 ||
+      err.status === 503
+    ) {
+      return res.status(503).json({
+        error:
+          'High traffic right now. Please try again in 30 seconds.'
       });
     }
 
