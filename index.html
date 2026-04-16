@@ -113,6 +113,8 @@ textarea::placeholder{color:#93B8D8}
 .run-btn{width:100%;margin-top:1.25rem;padding:16px;background:var(--gs);color:var(--w);border:none;border-radius:var(--r);font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .2s,transform .15s;box-shadow:0 4px 12px rgba(99,153,34,.25)}
 .run-btn:hover:not(:disabled){background:var(--gm);transform:translateY(-1px)}
 .run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.app-note{margin-top:1rem;font-size:12px;color:var(--g500);line-height:1.6}
+.app-note strong{color:var(--g700)}
 .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -134,6 +136,7 @@ textarea::placeholder{color:#93B8D8}
 .dl-row{display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap}
 .dl-btn{flex:1;min-width:140px;padding:11px;border:1.5px solid var(--bm);border-radius:var(--r);background:transparent;font-size:13px;font-weight:500;cursor:pointer;color:var(--bm);font-family:inherit;transition:all .2s}
 .dl-btn:hover{background:var(--bp)}
+.dl-btn:disabled{opacity:.5;cursor:not-allowed;background:var(--g50);border-color:var(--g300);color:var(--g500)}
 .dl-btn.paid{border-color:var(--gs);color:var(--gd)}
 .dl-btn.paid:hover{background:var(--gp)}
 
@@ -305,13 +308,13 @@ textarea::placeholder{color:#93B8D8}
 <div class="section" id="app-section">
   <div class="section-tag">Resume optimizer</div>
   <h2>Optimise your resume now</h2>
-  <p class="section-sub">Upload your resume (PDF or DOC) and paste the job description below.</p>
+  <p class="section-sub">Upload your resume as PDF, DOC, DOCX, or TXT and paste the job description below.</p>
 
   <div class="app-card">
     <div class="app-header">
       <div>
         <div class="app-header-title">ResumeFriendly Optimizer</div>
-        <div class="app-header-sub">Powered by Google Gemini AI &nbsp;·&nbsp; ATS-ready output</div>
+        <div class="app-header-sub">Powered by AI-assisted tailoring &nbsp;&middot;&nbsp; ATS-ready output</div>
       </div>
       <div class="app-header-badge">2 free / month</div>
     </div>
@@ -325,15 +328,15 @@ textarea::placeholder{color:#93B8D8}
             ondragover="handleDragOver(event)"
             ondragleave="handleDragLeave(event)"
             ondrop="handleDrop(event)">
-            <input type="file" id="resume-file" accept=".pdf,.doc,.docx,.txt" onchange="handleFileSelect(event)">
+            <input type="file" id="resume-file" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onchange="handleFileSelect(event)">
             <div class="upload-icon">
               <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
             <div class="upload-title" id="upload-title">Upload your resume</div>
-            <div class="upload-sub" id="upload-sub">PDF, DOC, DOCX or TXT &nbsp;·&nbsp; Click or drag &amp; drop</div>
+            <div class="upload-sub" id="upload-sub">PDF, DOC, DOCX, or TXT &nbsp;&middot;&nbsp; Click or drag &amp; drop</div>
             <div class="upload-file-name" id="upload-file-name"></div>
           </div>
-          <div class="ta-hint empty" id="hint-resume">Waiting for your resume...</div>
+          <div class="ta-hint empty" id="hint-resume">Waiting for your resume text file...</div>
         </div>
 
         <!-- JOB DESCRIPTION -->
@@ -350,20 +353,21 @@ textarea::placeholder{color:#93B8D8}
       </div>
 
       <button class="run-btn" id="run-btn" onclick="optimise()">Optimise my resume</button>
+      <div class="app-note"><strong>Supported uploads:</strong> PDF, DOC, DOCX, and TXT. If a scanned PDF has no selectable text, export it as Word or TXT for the best results.</div>
 
       <!-- RESULTS -->
       <div class="result-box" id="result-box">
         <div class="score-grid">
-          <div class="score-card before"><div class="score-lbl">Before ATS</div><div class="score-val" id="sc-before">—</div></div>
-          <div class="score-card after"><div class="score-lbl">After ATS</div><div class="score-val" id="sc-after">—</div></div>
-          <div class="score-card kw"><div class="score-lbl">Keywords</div><div class="score-val" id="sc-kw">—</div></div>
+          <div class="score-card before"><div class="score-lbl">Before ATS</div><div class="score-val" id="sc-before">--</div></div>
+          <div class="score-card after"><div class="score-lbl">After ATS</div><div class="score-val" id="sc-after">--</div></div>
+          <div class="score-card kw"><div class="score-lbl">Keywords</div><div class="score-val" id="sc-kw">--</div></div>
         </div>
         <div class="output-label">Optimised resume</div>
         <div class="output-area" id="output-area"></div>
         <div class="dl-row">
           <button class="dl-btn" onclick="downloadTxt()">Download .txt (free)</button>
-          <button class="dl-btn paid" onclick="buyDownload('pdf')">Download PDF — ₹49</button>
-          <button class="dl-btn paid" onclick="buyDownload('docx')">Download DOCX — ₹49</button>
+          <button class="dl-btn paid" data-paid-download="true" onclick="buyDownload('pdf')">Export PDF - &#8377;49</button>
+          <button class="dl-btn paid" data-paid-download="true" onclick="buyDownload('doc')">Download Word .doc - &#8377;49</button>
         </div>
       </div>
     </div>
@@ -393,21 +397,21 @@ textarea::placeholder{color:#93B8D8}
 <div class="section" id="features">
   <div class="section-tag">Features</div>
   <h2>Everything you need to get hired</h2>
-  <p class="section-sub">Not just keyword stuffing — real, intelligent resume improvement.</p>
+  <p class="section-sub">Not just keyword stuffing - real, intelligent resume improvement.</p>
   <div class="feat-grid">
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h3>ATS keyword matching</h3><p>Role-critical keywords woven naturally so ATS filters stop rejecting you.</p></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><h3>Impactful bullets</h3><p>Every weak bullet rewritten with stronger verbs and quantified results.</p></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><h3>Genuine ATS score</h3><p>Real before/after score. No fake improvements — ever.</p></div>
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><h3>PDF &amp; DOC upload</h3><p>Upload your existing resume as PDF, DOC, or DOCX — no copy-pasting needed.</p></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><h3>PDF and Word uploads</h3><p>Upload your existing resume as PDF, DOC, DOCX, or TXT without manual copy-paste.</p></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><h3>Smart page length</h3><p>Right length enforced — 1 page early career, 2 pages for senior roles.</p></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3>No data sold</h3><p>Your resume is only used to generate the optimised version. Never shared.</p></div>
   </div>
   <div class="steps-wrap">
     <div class="steps-title">Dead simple. Effortlessly powerful.</div>
     <div class="steps-row">
-      <div class="step-item"><div class="step-num">01</div><h3>Upload resume &amp; paste job</h3><p>Upload your PDF or DOC and paste the job description.</p></div>
+      <div class="step-item"><div class="step-num">01</div><h3>Upload resume &amp; paste job</h3><p>Upload your PDF or Word resume and paste the job description.</p></div>
       <div class="step-item"><div class="step-num">02</div><h3>AI runs the tailoring</h3><p>We find the gaps, rewrite bullets, inject keywords, and tailor your resume.</p></div>
-      <div class="step-item"><div class="step-num">03</div><h3>Download &amp; apply</h3><p>Get your improved resume as PDF or DOCX. Apply with confidence.</p></div>
+      <div class="step-item"><div class="step-num">03</div><h3>Export &amp; apply</h3><p>Export your improved resume as PDF or Word .doc, then apply with confidence.</p></div>
     </div>
   </div>
 </div>
@@ -426,12 +430,12 @@ textarea::placeholder{color:#93B8D8}
     <div class="price-card popular">
       <div class="popular-badge">Most popular</div>
       <div class="price-plan">One-time</div><div class="price-amount">₹49</div><div class="price-period">per download · no subscription</div>
-      <ul class="price-features"><li>Everything in Free</li><li>Download as PDF</li><li>Download as DOCX</li><li>Professional typesetting</li><li>No auto-renewal ever</li></ul>
+      <ul class="price-features"><li>Everything in Free</li><li>Export as PDF</li><li>Download as Word .doc</li><li>Professional formatting</li><li>No auto-renewal ever</li></ul>
       <button class="price-btn solid" onclick="scrollToApp()">Start optimising</button>
     </div>
     <div class="price-card">
       <div class="price-plan">Pro</div><div class="price-amount">₹299</div><div class="price-period">per month</div>
-      <ul class="price-features"><li>Unlimited optimisations</li><li>Unlimited PDF &amp; DOCX</li><li>Priority AI processing</li><li>Cover letter generator</li><li>Cancel anytime</li></ul>
+      <ul class="price-features"><li>Unlimited optimisations</li><li>Unlimited PDF &amp; Word exports</li><li>Priority AI processing</li><li>Cover letter generator</li><li>Cancel anytime</li></ul>
       <button class="price-btn outline" onclick="scrollToApp()">Try free first</button>
     </div>
   </div>
@@ -442,8 +446,8 @@ textarea::placeholder{color:#93B8D8}
   <div class="section-tag">FAQ</div>
   <h2>Common questions</h2>
   <p class="section-sub">Everything you need to know.</p>
-  <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Is it really free to start?<span class="faq-icon">+</span></button><div class="faq-a">Yes. You get 2 resume optimisations every month at no cost. No credit card needed. You only pay to download as PDF or DOCX.</div></div>
-  <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What file formats can I upload?<span class="faq-icon">+</span></button><div class="faq-a">You can upload PDF, DOC, DOCX, or plain TXT files. We extract the text automatically so the AI can analyse and optimise it.</div></div>
+  <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Is it really free to start?<span class="faq-icon">+</span></button><div class="faq-a">Yes. You get 2 resume optimisations every month at no cost. No credit card needed. You only pay when you want a PDF or Word export.</div></div>
+  <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What file formats can I upload?<span class="faq-icon">+</span></button><div class="faq-a">You can upload PDF, DOC, DOCX, or TXT resumes. Text-based PDFs work best. If your PDF is just a scanned image, convert it to Word or TXT first.</div></div>
   <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Will my resume actually pass ATS scanners?<span class="faq-icon">+</span></button><div class="faq-a">ResumeFriendly rewrites your resume to match the exact keywords ATS systems look for. Our users consistently see 30–60 point score improvements.</div></div>
   <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Is my resume data private?<span class="faq-icon">+</span></button><div class="faq-a">Your resume is only used to generate the optimised version. We do not sell or share your data with third parties — ever.</div></div>
   <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What payment methods are supported?<span class="faq-icon">+</span></button><div class="faq-a">All major cards, UPI, net banking, and wallets via Razorpay — PCI-DSS compliant. We never store your card details.</div></div>
@@ -454,7 +458,7 @@ textarea::placeholder{color:#93B8D8}
   <h2>Ready to land more interviews?</h2>
   <p>Join hundreds of job seekers already using ResumeFriendly to get past ATS filters.</p>
   <button class="btn-primary" onclick="scrollToApp()">Claim your 2 free resumes</button>
-  <div class="cta-note">No credit card required &nbsp;·&nbsp; Cancel anytime</div>
+  <div class="cta-note">No credit card required &nbsp;&middot;&nbsp; Cancel anytime</div>
 </section>
 
 <!-- FOOTER -->
@@ -463,7 +467,7 @@ textarea::placeholder{color:#93B8D8}
   <div class="footer-links">
     <a href="#">Privacy policy</a><a href="#">Terms</a><a href="#">Refund policy</a><a href="#">Contact</a>
   </div>
-  <div class="footer-copy">© 2026 ResumeFriendly &nbsp;·&nbsp; Powered by Razorpay</div>
+  <div class="footer-copy">&copy; 2026 ResumeFriendly &nbsp;&middot;&nbsp; Powered by Razorpay</div>
 </footer>
 
 <!-- MODAL -->
@@ -499,12 +503,41 @@ textarea::placeholder{color:#93B8D8}
 <div class="toast" id="toast"></div>
 
 <script>
-const RAZORPAY_KEY = 'rzp_test_YOUR_KEY_HERE';
+const MAX_RESUME_FILE_BYTES = 5 * 1024 * 1024;
 let currentUser = null;
 let resumeText = '';
 let jobFocused = false;
+let razorpayKeyId = '';
+let paymentEnabled = false;
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadPublicConfig();
+  updatePaidButtons();
+});
 
 function scrollToApp(){document.getElementById('app-section').scrollIntoView({behavior:'smooth',block:'start'})}
+
+async function loadPublicConfig(){
+  try{
+    const res=await fetch('/api/config');
+    if(!res.ok){throw new Error('Config request failed.')}
+    const config=await res.json();
+    razorpayKeyId=config.razorpayKeyId||'';
+    paymentEnabled=Boolean(config.paymentEnabled&&razorpayKeyId);
+  }catch(error){
+    paymentEnabled=false;
+    razorpayKeyId='';
+  }finally{
+    updatePaidButtons();
+  }
+}
+
+function updatePaidButtons(){
+  document.querySelectorAll('[data-paid-download="true"]').forEach((button)=>{
+    button.disabled=!paymentEnabled;
+    button.title=paymentEnabled?'':'Configure Razorpay keys on the server to enable paid exports.';
+  });
+}
 
 /* MODAL */
 function openModal(tab){document.getElementById('modal-overlay').classList.add('open');switchTab(tab)}
@@ -560,11 +593,30 @@ function handleDrop(e){
   document.getElementById('upload-box').classList.remove('dragging');
   const f=e.dataTransfer.files[0];if(f)processFile(f);
 }
-function processFile(file){
-  if(!file.name.match(/\.(pdf|doc|docx|txt)$/i)){showToast('Please upload a PDF, DOC, DOCX, or TXT file.');return}
-  const reader=new FileReader();
-  reader.onload=function(e){resumeText=e.target.result;setUploadFilled(file.name)};
-  reader.readAsText(file);
+function arrayBufferToBase64(buffer){
+  let binary='';
+  const bytes=new Uint8Array(buffer);
+  const chunkSize=0x8000;
+  for(let i=0;i<bytes.length;i+=chunkSize){
+    const chunk=bytes.subarray(i,i+chunkSize);
+    binary+=String.fromCharCode(...chunk);
+  }
+  return btoa(binary);
+}
+async function processFile(file){
+  if(!/\.(pdf|doc|docx|txt)$/i.test(file.name)){showToast('Please upload a PDF, DOC, DOCX, or TXT resume.');return}
+  if(file.size>MAX_RESUME_FILE_BYTES){showToast('Please upload a resume smaller than 5 MB.');return}
+  try{
+    const buffer=await file.arrayBuffer();
+    const res=await fetch('/api/extract-resume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:file.name,fileDataBase64:arrayBufferToBase64(buffer)})});
+    const payload=await res.json().catch(()=>({}));
+    if(!res.ok){throw new Error(payload.error||'Could not read that file.')}
+    if(!payload.text||payload.text.length<50){throw new Error('Could not extract enough text from that resume.')}
+    resumeText=payload.text;
+    setUploadFilled(file.name);
+  }catch(error){
+    showToast(error.message||'Could not read that resume file.');
+  }
 }
 function setUploadFilled(filename){
   document.getElementById('upload-box').className='upload-box filled';
@@ -573,6 +625,7 @@ function setUploadFilled(filename){
   document.getElementById('hint-resume').textContent='Resume uploaded ✓';
   document.getElementById('upload-title').textContent='Resume uploaded';
   document.getElementById('upload-sub').textContent='Click to change file';
+  document.getElementById('hint-resume').textContent='Resume uploaded successfully';
   const fn=document.getElementById('upload-file-name');
   fn.textContent=filename;fn.style.display='block';
 }
@@ -589,11 +642,13 @@ function handleJobInput(){
 }
 
 /* SAMPLE */
+const CLEAN_SAMPLE_RESUME=`Alex Johnson\nalex@email.com | +91 98765 43210\n\nEXPERIENCE\nSoftware Engineer - Acme Corp (2021-2024)\n- Improved backend services for customer-facing workflows\n- Supported SQL reporting and database maintenance work\n- Participated in peer code reviews and release testing\n\nEDUCATION\nB.Tech Computer Science - VIT University (2021)\n\nSKILLS\nPython, SQL, Git, Cloud`;
+const CLEAN_SAMPLE_JOB=`Senior Backend Engineer\n- 3+ years Python experience\n- Strong SQL and PostgreSQL skills\n- AWS or GCP cloud experience\n- CI/CD pipelines and code reviews\n- Design and scale distributed systems`;
 const SAMPLE_RESUME=`Alex Johnson\nalex@email.com | +91 98765 43210\n\nEXPERIENCE\nSoftware Engineer — Acme Corp (2021–2024)\n• Worked on backend systems\n• Helped with database tasks\n• Participated in code reviews\n\nEDUCATION\nB.Tech Computer Science — VIT University (2021)\n\nSKILLS\nPython, SQL, Git, Cloud`;
 const SAMPLE_JOB=`Senior Backend Engineer\n• 3+ years Python experience\n• Strong SQL and PostgreSQL skills\n• AWS or GCP cloud experience\n• CI/CD pipelines and code reviews\n• Design and scale distributed systems`;
 function loadSample(){
-  resumeText=SAMPLE_RESUME;setUploadFilled('sample-resume.txt');
-  document.getElementById('job-input').value=SAMPLE_JOB;handleJobInput();
+  resumeText=CLEAN_SAMPLE_RESUME;setUploadFilled('sample-resume.txt');
+  document.getElementById('job-input').value=CLEAN_SAMPLE_JOB;handleJobInput();
   scrollToApp();showToast('Sample resume and job loaded!');
 }
 
@@ -606,29 +661,67 @@ async function optimise(){
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Optimising your resume...';
   try{
     const res=await fetch('/api/optimise',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resume:resumeText,job})});
-    if(!res.ok){const e=await res.json();throw new Error(e.error||'Server error')}
-    const p=await res.json();
-    document.getElementById('sc-before').textContent=Math.round(p.ats_before);
-    document.getElementById('sc-after').textContent=Math.round(p.ats_after);
-    document.getElementById('sc-kw').textContent=Math.round(p.keyword_match)+'%';
-    document.getElementById('output-area').textContent=p.optimised_resume;
+    const payload=await res.json().catch(()=>({}));
+    if(!res.ok){throw new Error(payload.error||'Server error')}
+    document.getElementById('sc-before').textContent=Math.round(payload.ats_before);
+    document.getElementById('sc-after').textContent=Math.round(payload.ats_after);
+    document.getElementById('sc-kw').textContent=Math.round(payload.keyword_match)+'%';
+    document.getElementById('output-area').textContent=payload.optimised_resume;
     const rb=document.getElementById('result-box');rb.className='result-box visible';
     rb.scrollIntoView({behavior:'smooth',block:'nearest'});
     showToast('Resume optimised successfully!');
-  }catch(err){showToast(err.message||'Something went wrong. Please try again.')}
-  btn.disabled=false;btn.innerHTML='Optimise my resume';
+  }catch(err){
+    showToast(err.message||'Something went wrong. Please try again.');
+  }finally{
+    btn.disabled=false;btn.innerHTML='Optimise my resume';
+  }
 }
 
 /* DOWNLOAD */
 function downloadTxt(){
-  const t=document.getElementById('output-area').textContent;
-  if(!t){showToast('Please optimise your resume first.');return}
-  const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,'+encodeURIComponent(t);a.download='resumefriendly-optimised.txt';a.click();showToast('Downloaded as .txt!');
+  const text=document.getElementById('output-area').textContent;
+  if(!text){showToast('Please optimise your resume first.');return}
+  const link=document.createElement('a');
+  link.href='data:text/plain;charset=utf-8,'+encodeURIComponent(text);
+  link.download='resumefriendly-optimised.txt';
+  link.click();
+  showToast('Downloaded as .txt!');
 }
 async function buyDownload(format){
-  const t=document.getElementById('output-area').textContent;
-  if(!t){showToast('Please optimise your resume first.');return}
+  const text=document.getElementById('output-area').textContent;
+  if(!text){showToast('Please optimise your resume first.');return}
+  if(!paymentEnabled||!razorpayKeyId){showToast('Paid exports are not configured yet. Add Razorpay keys on the server first.');return}
+  if(typeof window.Razorpay!=='function'){showToast('Payment widget failed to load. Please refresh and try again.');return}
   try{
+    {
+      const orderRes=await fetch('/api/payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({format})});
+      const order=await orderRes.json().catch(()=>({}));
+      if(!orderRes.ok){throw new Error(order.error||'Could not create payment order.')}
+      const label=format==='pdf'?'PDF export':'Word export';
+      const rzp=new window.Razorpay({
+        key:razorpayKeyId,
+        order_id:order.id,
+        amount:order.amount,
+        currency:order.currency||'INR',
+        name:'ResumeFriendly',
+        description:label,
+        handler:function(){
+          if(format==='pdf'){
+            showToast('Payment successful. Opening PDF export...');
+            renderPdfExport(text);
+          }else{
+            showToast('Payment successful. Downloading Word file...');
+            generateWordDoc(text);
+          }
+        },
+        theme:{color:'#185FA5'},
+        modal:{ondismiss:function(){showToast('Payment cancelled.')}}
+      });
+      rzp.on('payment.failed',function(){showToast('Payment failed. Please try again.')});
+      rzp.open();
+      return;
+    }
+
     const orderRes=await fetch('/api/payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({format})});
     const order=await orderRes.json();
     const rzp=new Razorpay({key:RAZORPAY_KEY,order_id:order.id,amount:order.amount,currency:'INR',name:'ResumeFriendly',description:'Resume Download — '+format.toUpperCase(),handler:function(){showToast('Payment successful! Downloading...');format==='pdf'?generatePDF(t):generateDOCX(t)},theme:{color:'#185FA5'},modal:{ondismiss:function(){showToast('Payment cancelled.')}}});
@@ -636,11 +729,40 @@ async function buyDownload(format){
   }catch(e){showToast('Could not initiate payment. Please try again.')}
 }
 function generatePDF(text){
+  const escapedText=escapeHtmlText(text);
+  const popup=window.open('','_blank');
+  if(!popup){showToast('Please allow popups to export your PDF.');return}
+  popup.document.write(`<!DOCTYPE html><html><head><title>ResumeFriendly Export</title><style>body{font-family:Arial,sans-serif;font-size:12px;line-height:1.6;padding:2cm;max-width:800px;margin:0 auto}pre{white-space:pre-wrap;font-family:Arial,sans-serif}</style></head><body><pre>${escapedText}</pre><script>window.onload=function(){window.print()}<\/script></body></html>`);
+  popup.document.close();
+  return;
   const w=window.open('','_blank');
   w.document.write('<!DOCTYPE html><html><head><title>ResumeFriendly</title><style>body{font-family:Arial,sans-serif;font-size:12px;line-height:1.6;padding:2cm;max-width:800px;margin:0 auto}pre{white-space:pre-wrap;font-family:Arial,sans-serif}</style></head><body><pre>'+text+'</pre><script>window.onload=function(){window.print();window.close()}<\/script></body></html>');
   w.document.close();
 }
+function escapeHtmlText(value){
+  return value
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+function generateWordDoc(text){
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ResumeFriendly Export</title></head><body><pre style="white-space:pre-wrap;font-family:Arial,sans-serif;">${escapeHtmlText(text)}</pre></body></html>`;
+  const blob=new Blob(['\ufeff',html],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement('a');
+  link.href=url;
+  link.download='resumefriendly-optimised.doc';
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function renderPdfExport(text){
+  generatePDF(text);
+}
 function generateDOCX(text){
+  generateWordDoc(text);
+  return;
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/msword'}));a.download='resumefriendly-optimised.docx';a.click();
 }
 

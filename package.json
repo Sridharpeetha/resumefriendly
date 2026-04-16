@@ -1,16 +1,19 @@
 {
   "name": "resumefriendly",
   "version": "1.0.0",
-  "description": "AI-powered resume optimizer with ATS scoring and Razorpay payments",
+  "description": "AI-powered resume optimizer with serverless AI scoring and Razorpay payments",
   "type": "module",
   "scripts": {
     "dev": "vercel dev",
     "deploy": "vercel --prod",
-    "install-all": "npm install"
+    "install-all": "npm install",
+    "check": "node --check api/optimise.js && node --check api/payment.js && node --check api/config.js && node --check api/extract-resume.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
-    "razorpay": "^2.9.6"
+    "pdf-parse": "^1.1.1",
+    "razorpay": "^2.9.6",
+    "word-extractor": "^1.0.4"
   },
   "devDependencies": {
     "vercel": "^34.0.0"
