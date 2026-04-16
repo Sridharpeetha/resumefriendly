@@ -2,18 +2,26 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const MAX_INPUT_CHARS = 20000;
 
-const GEMINI_MODEL =
-  process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+/* ---------- MODEL PRIORITY ---------- */
+
+const GEMINI_MODELS = [
+  process.env.GEMINI_MODEL_PRIMARY || 'gemini-2.5-flash',
+  process.env.GEMINI_MODEL_SECONDARY || 'gemini-1.5-flash'
+];
 
 const ANTHROPIC_MODEL =
   process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
 
-/* ---------------- HELPERS ---------------- */
+/* ---------- HELPERS ---------- */
 
 function cleanInput(value) {
   return typeof value === 'string'
-    ? value.replace(/\u0000/g, '').trim()
+    ? value.replace(/\u0000/g, '')
     : '';
+}
+
+function sanitize(value) {
+  return cleanInput(value).trim();
 }
 
 function clampScore(value) {
@@ -30,7 +38,7 @@ function sleep(ms) {
 
 function buildPrompt(resume, job) {
   return `
-You are an expert ATS resume optimizer.
+You are an elite ATS resume optimizer.
 
 Return ONLY valid JSON.
 
@@ -42,13 +50,14 @@ Return ONLY valid JSON.
 }
 
 Rules:
-1. Keep same personal details.
-2. Keep same dates and company names.
-3. Improve bullet points professionally.
-4. Add relevant keywords naturally.
+1. Keep same identity details.
+2. Keep same dates and companies.
+3. Improve impact bullets using metrics if already present.
+4. Add job keywords naturally.
 5. No fake experience.
-6. ATS friendly format.
+6. ATS clean formatting.
 7. No markdown.
+8. Strong concise wording.
 
 RESUME:
 ${resume}
@@ -74,74 +83,112 @@ function parseModelResponse(rawText) {
 
   const data = JSON.parse(text);
 
-  if (!data.optimised_resume) {
-    throw new Error('Invalid AI response.');
+  if (
+    typeof data !== 'object' ||
+    typeof data.optimised_resume !== 'string'
+  ) {
+    throw new Error('Invalid AI output');
   }
 
   return {
     ats_before: clampScore(data.ats_before),
     ats_after: clampScore(data.ats_after),
     keyword_match: clampScore(data.keyword_match),
-    optimised_resume: String(data.optimised_resume).trim()
+    optimised_resume: data.optimised_resume.trim()
   };
 }
 
-/* ---------------- GEMINI ---------------- */
+/* ---------- GEMINI ---------- */
 
-async function callGemini(prompt) {
+async function callGeminiModel(prompt, model) {
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     throw new Error('Gemini unavailable');
   }
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-      GEMINI_MODEL
-    )}:generateContent?key=${encodeURIComponent(apiKey)}`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: prompt }]
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25000);
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
+        model
+      )}:generateContent?key=${encodeURIComponent(apiKey)}`,
+      {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: 'user',
+              parts: [{ text: prompt }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.35,
+            responseMimeType: 'application/json'
           }
-        ],
-        generationConfig: {
-          temperature: 0.4,
-          responseMimeType: 'application/json'
-        }
-      })
-    }
-  );
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    const err = new Error(
-      data?.error?.message || 'Gemini busy'
+        })
+      }
     );
-    err.status = response.status;
-    throw err;
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const err = new Error(
+        data?.error?.message || `${model} failed`
+      );
+      err.status = response.status;
+      throw err;
+    }
+
+    const text = data?.candidates?.[0]?.content?.parts
+      ?.map((p) => p.text || '')
+      .join('')
+      .trim();
+
+    if (!text) {
+      throw new Error(`${model} empty response`);
+    }
+
+    return text;
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const text = data?.candidates?.[0]?.content?.parts
-    ?.map((p) => p.text || '')
-    .join('')
-    .trim();
-
-  if (!text) {
-    throw new Error('Gemini empty response');
-  }
-
-  return text;
 }
 
-/* ---------------- CLAUDE ---------------- */
+async function tryGemini(prompt) {
+  let lastError;
+
+  for (const model of GEMINI_MODELS) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`Gemini ${model} attempt ${attempt}`);
+        return await callGeminiModel(prompt, model);
+      } catch (err) {
+        lastError = err;
+
+        const retryable =
+          err.status === 429 ||
+          err.status === 500 ||
+          err.status === 503 ||
+          err.name === 'AbortError';
+
+        if (!retryable) break;
+
+        await sleep(1800 * attempt);
+      }
+    }
+  }
+
+  throw lastError || new Error('Gemini failed');
+}
+
+/* ---------- CLAUDE ---------- */
 
 async function callClaude(prompt) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -175,51 +222,33 @@ async function callClaude(prompt) {
   return text;
 }
 
-/* ---------------- PROVIDER FLOW ---------------- */
-
-async function tryGemini(prompt) {
-  let lastError;
-
-  for (let i = 0; i < 2; i++) {
-    try {
-      return await callGemini(prompt);
-    } catch (err) {
-      lastError = err;
-      await sleep(1500);
-    }
-  }
-
-  throw lastError;
-}
+/* ---------- ENGINE ---------- */
 
 async function generateAI(prompt) {
-  /* 1. Gemini first */
+  /* Gemini first */
   if (process.env.GEMINI_API_KEY) {
     try {
-      console.log('Trying Gemini...');
       return await tryGemini(prompt);
     } catch (err) {
-      console.log('Gemini failed');
+      console.log('All Gemini models failed');
     }
   }
 
-  /* 2. Claude fallback only if key exists */
+  /* Claude fallback */
   if (process.env.ANTHROPIC_API_KEY) {
     try {
-      console.log('Trying Claude...');
       return await callClaude(prompt);
     } catch (err) {
       console.log('Claude failed');
     }
   }
 
-  /* 3. Clean final message */
   throw new Error(
     'AI servers are busy right now. Please try again shortly.'
   );
 }
 
-/* ---------------- API ---------------- */
+/* ---------- API ---------- */
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -229,8 +258,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const resume = cleanInput(req.body?.resume);
-    const job = cleanInput(req.body?.job);
+    const resume = sanitize(req.body?.resume);
+    const job = sanitize(req.body?.job);
 
     if (!resume || !job) {
       return res.status(400).json({
@@ -261,9 +290,9 @@ export default async function handler(req, res) {
 
     const prompt = buildPrompt(resume, job);
 
-    const rawText = await generateAI(prompt);
+    const raw = await generateAI(prompt);
 
-    const result = parseModelResponse(rawText);
+    const result = parseModelResponse(raw);
 
     return res.status(200).json(result);
   } catch (err) {
@@ -271,7 +300,7 @@ export default async function handler(req, res) {
 
     if (err instanceof SyntaxError) {
       return res.status(500).json({
-        error: 'AI returned invalid format.'
+        error: 'AI returned invalid data.'
       });
     }
 
@@ -290,7 +319,7 @@ export default async function handler(req, res) {
     ) {
       return res.status(503).json({
         error:
-          'High traffic right now. Please try again in 30 seconds.'
+          'High traffic right now. Please retry in 30 seconds.'
       });
     }
 
