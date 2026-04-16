@@ -115,6 +115,11 @@ textarea::placeholder{color:#93B8D8}
 .run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .app-note{margin-top:1rem;font-size:12px;color:var(--g500);line-height:1.6}
 .app-note strong{color:var(--g700)}
+.status-banner{margin-top:1rem;padding:12px 14px;border-radius:var(--r);font-size:12px;line-height:1.6;display:none}
+.status-banner.visible{display:block}
+.status-banner.info{background:#F3F8FD;border:1px solid var(--bl);color:var(--bdk)}
+.status-banner.success{background:#F4FAF0;border:1px solid var(--gl);color:var(--gd)}
+.status-banner.error{background:#FFF4F4;border:1px solid #F1B0B7;color:#A61E2B}
 .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
@@ -308,7 +313,7 @@ textarea::placeholder{color:#93B8D8}
 <div class="section" id="app-section">
   <div class="section-tag">Resume optimizer</div>
   <h2>Optimise your resume now</h2>
-  <p class="section-sub">Upload your resume as PDF, DOC, DOCX, or TXT and paste the job description below.</p>
+  <p class="section-sub">Upload your resume as PDF, DOC, or TXT and paste the job description below.</p>
 
   <div class="app-card">
     <div class="app-header">
@@ -328,12 +333,12 @@ textarea::placeholder{color:#93B8D8}
             ondragover="handleDragOver(event)"
             ondragleave="handleDragLeave(event)"
             ondrop="handleDrop(event)">
-            <input type="file" id="resume-file" accept=".pdf,.doc,.docx,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" onchange="handleFileSelect(event)">
+            <input type="file" id="resume-file" accept=".pdf,.doc,.txt,application/pdf,application/msword,text/plain" onchange="handleFileSelect(event)">
             <div class="upload-icon">
               <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
             </div>
             <div class="upload-title" id="upload-title">Upload your resume</div>
-            <div class="upload-sub" id="upload-sub">PDF, DOC, DOCX, or TXT &nbsp;&middot;&nbsp; Click or drag &amp; drop</div>
+            <div class="upload-sub" id="upload-sub">PDF, DOC, or TXT &nbsp;&middot;&nbsp; Click or drag &amp; drop</div>
             <div class="upload-file-name" id="upload-file-name"></div>
           </div>
           <div class="ta-hint empty" id="hint-resume">Waiting for your resume text file...</div>
@@ -353,7 +358,8 @@ textarea::placeholder{color:#93B8D8}
       </div>
 
       <button class="run-btn" id="run-btn" onclick="optimise()">Optimise my resume</button>
-      <div class="app-note"><strong>Supported uploads:</strong> PDF, DOC, DOCX, and TXT. If a scanned PDF has no selectable text, export it as Word or TXT for the best results.</div>
+      <div class="app-note"><strong>Supported uploads:</strong> PDF, DOC, and TXT. If a scanned PDF has no selectable text, export it as Word or TXT for the best results.</div>
+      <div class="status-banner info" id="app-status"></div>
 
       <!-- RESULTS -->
       <div class="result-box" id="result-box">
@@ -402,14 +408,14 @@ textarea::placeholder{color:#93B8D8}
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><h3>ATS keyword matching</h3><p>Role-critical keywords woven naturally so ATS filters stop rejecting you.</p></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div><h3>Impactful bullets</h3><p>Every weak bullet rewritten with stronger verbs and quantified results.</p></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><h3>Genuine ATS score</h3><p>Real before/after score. No fake improvements — ever.</p></div>
-    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><h3>PDF and Word uploads</h3><p>Upload your existing resume as PDF, DOC, DOCX, or TXT without manual copy-paste.</p></div>
+    <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div><h3>PDF and Word uploads</h3><p>Upload your existing resume as PDF, DOC, or TXT without manual copy-paste.</p></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div><h3>Smart page length</h3><p>Right length enforced — 1 page early career, 2 pages for senior roles.</p></div>
     <div class="feat-card"><div class="feat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3>No data sold</h3><p>Your resume is only used to generate the optimised version. Never shared.</p></div>
   </div>
   <div class="steps-wrap">
     <div class="steps-title">Dead simple. Effortlessly powerful.</div>
     <div class="steps-row">
-      <div class="step-item"><div class="step-num">01</div><h3>Upload resume &amp; paste job</h3><p>Upload your PDF or Word resume and paste the job description.</p></div>
+      <div class="step-item"><div class="step-num">01</div><h3>Upload resume &amp; paste job</h3><p>Upload your PDF or DOC resume and paste the job description.</p></div>
       <div class="step-item"><div class="step-num">02</div><h3>AI runs the tailoring</h3><p>We find the gaps, rewrite bullets, inject keywords, and tailor your resume.</p></div>
       <div class="step-item"><div class="step-num">03</div><h3>Export &amp; apply</h3><p>Export your improved resume as PDF or Word .doc, then apply with confidence.</p></div>
     </div>
@@ -447,7 +453,7 @@ textarea::placeholder{color:#93B8D8}
   <h2>Common questions</h2>
   <p class="section-sub">Everything you need to know.</p>
   <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Is it really free to start?<span class="faq-icon">+</span></button><div class="faq-a">Yes. You get 2 resume optimisations every month at no cost. No credit card needed. You only pay when you want a PDF or Word export.</div></div>
-  <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What file formats can I upload?<span class="faq-icon">+</span></button><div class="faq-a">You can upload PDF, DOC, DOCX, or TXT resumes. Text-based PDFs work best. If your PDF is just a scanned image, convert it to Word or TXT first.</div></div>
+  <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What file formats can I upload?<span class="faq-icon">+</span></button><div class="faq-a">You can upload PDF, DOC, or TXT resumes. Text-based PDFs work best. If your PDF is just a scanned image, convert it to DOC or TXT first.</div></div>
   <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Will my resume actually pass ATS scanners?<span class="faq-icon">+</span></button><div class="faq-a">ResumeFriendly rewrites your resume to match the exact keywords ATS systems look for. Our users consistently see 30–60 point score improvements.</div></div>
   <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">Is my resume data private?<span class="faq-icon">+</span></button><div class="faq-a">Your resume is only used to generate the optimised version. We do not sell or share your data with third parties — ever.</div></div>
   <div class="faq-item"><button class="faq-q" onclick="toggleFaq(this)">What payment methods are supported?<span class="faq-icon">+</span></button><div class="faq-a">All major cards, UPI, net banking, and wallets via Razorpay — PCI-DSS compliant. We never store your card details.</div></div>
@@ -475,14 +481,14 @@ textarea::placeholder{color:#93B8D8}
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <h2 id="modal-title">Welcome back</h2>
-    <div class="modal-sub" id="modal-sub">Sign in to your ResumeFriendly account</div>
+    <div class="modal-sub" id="modal-sub">Demo sign-in saved in this browser</div>
     <div class="modal-tabs">
       <button class="modal-tab active" id="tab-login" onclick="switchTab('login')">Log in</button>
       <button class="modal-tab" id="tab-signup" onclick="switchTab('signup')">Sign up</button>
     </div>
     <button class="google-btn" onclick="googleAuth()">
       <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-      Continue with Google
+      Continue in Demo Mode
     </button>
     <div class="modal-divider">or</div>
     <div id="login-form">
@@ -504,24 +510,101 @@ textarea::placeholder{color:#93B8D8}
 
 <script>
 const MAX_RESUME_FILE_BYTES = 5 * 1024 * 1024;
+const DEMO_AUTH_STORAGE_KEY = 'resumefriendly-demo-user';
 let currentUser = null;
 let resumeText = '';
 let jobFocused = false;
 let razorpayKeyId = '';
 let paymentEnabled = false;
 
+const CLEAN_SAMPLE_RESUME=`Alex Johnson
+alex@email.com | +91 98765 43210
+
+EXPERIENCE
+Software Engineer - Acme Corp (2021-2024)
+- Improved backend services for customer-facing workflows
+- Supported SQL reporting and database maintenance work
+- Participated in peer code reviews and release testing
+
+EDUCATION
+B.Tech Computer Science - VIT University (2021)
+
+SKILLS
+Python, SQL, Git, Cloud`;
+const CLEAN_SAMPLE_JOB=`Senior Backend Engineer
+- 3+ years Python experience
+- Strong SQL and PostgreSQL skills
+- AWS or GCP cloud experience
+- CI/CD pipelines and code reviews
+- Design and scale distributed systems`;
+
 document.addEventListener('DOMContentLoaded', () => {
+  restoreCurrentUser();
   loadPublicConfig();
   updatePaidButtons();
+  clearAppStatus();
 });
 
 function scrollToApp(){document.getElementById('app-section').scrollIntoView({behavior:'smooth',block:'start'})}
+function isValidEmail(value){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)}
+function persistCurrentUser(){if(currentUser){localStorage.setItem(DEMO_AUTH_STORAGE_KEY,JSON.stringify(currentUser));}}
+function clearStoredUser(){localStorage.removeItem(DEMO_AUTH_STORAGE_KEY)}
+function clearAuthFields(){['login-email','login-password','signup-name','signup-email','signup-password'].forEach((id)=>{const el=document.getElementById(id);if(el)el.value='';})}
+function restoreCurrentUser(){
+  try{
+    const raw=localStorage.getItem(DEMO_AUTH_STORAGE_KEY);
+    currentUser=raw?JSON.parse(raw):null;
+  }catch(error){
+    currentUser=null;
+  }
+  updateNavAuth();
+}
+
+function setAppStatus(message,type='info'){
+  const el=document.getElementById('app-status');
+  if(!el){return}
+  el.textContent=message;
+  el.className='status-banner visible '+type;
+}
+function clearAppStatus(){
+  const el=document.getElementById('app-status');
+  if(!el){return}
+  el.textContent='';
+  el.className='status-banner info';
+}
+
+async function requestJson(url, payload, fallbackMessage) {
+  try{
+    const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const raw=await response.text();
+    let data={};
+
+    if(raw){
+      try{
+        data=JSON.parse(raw);
+      }catch(parseError){
+        throw new Error('The server returned an invalid response. This usually means an API route crashed.');
+      }
+    }
+
+    if(!response.ok){
+      throw new Error(data.error||fallbackMessage);
+    }
+
+    return data;
+  }catch(error){
+    if(error instanceof TypeError){
+      throw new Error('Could not reach the server. Make sure npm run dev is running and try again.');
+    }
+    throw error;
+  }
+}
 
 async function loadPublicConfig(){
   try{
-    const res=await fetch('/api/config');
-    if(!res.ok){throw new Error('Config request failed.')}
-    const config=await res.json();
+    const response=await fetch('/api/config');
+    const config=await response.json().catch(()=>({}));
+    if(!response.ok){throw new Error(config.error||'Config request failed.')}
     razorpayKeyId=config.razorpayKeyId||'';
     paymentEnabled=Boolean(config.paymentEnabled&&razorpayKeyId);
   }catch(error){
@@ -539,7 +622,6 @@ function updatePaidButtons(){
   });
 }
 
-/* MODAL */
 function openModal(tab){document.getElementById('modal-overlay').classList.add('open');switchTab(tab)}
 function closeModal(){document.getElementById('modal-overlay').classList.remove('open')}
 function closeModalOutside(e){if(e.target===document.getElementById('modal-overlay'))closeModal()}
@@ -548,43 +630,57 @@ function switchTab(tab){
   document.getElementById('tab-signup').classList.toggle('active',tab==='signup');
   document.getElementById('login-form').style.display=tab==='login'?'block':'none';
   document.getElementById('signup-form').style.display=tab==='signup'?'block':'none';
-  document.getElementById('modal-title').textContent=tab==='login'?'Welcome back':'Create account';
-  document.getElementById('modal-sub').textContent=tab==='login'?'Sign in to your ResumeFriendly account':'Start optimising your resume for free';
+  document.getElementById('modal-title').textContent=tab==='login'?'Welcome back':'Create demo account';
+  document.getElementById('modal-sub').textContent=tab==='login'?'Demo sign-in saved in this browser':'Create demo access saved in this browser';
 }
 
-/* AUTH */
 function doLogin(){
   const email=document.getElementById('login-email').value.trim();
   const pass=document.getElementById('login-password').value;
   if(!email||!pass){showToast('Please fill in all fields.');return}
-  currentUser={name:email.split('@')[0],email};
-  updateNavAuth();closeModal();showToast('Welcome back, '+currentUser.name+'!');
+  if(!isValidEmail(email)){showToast('Please enter a valid email address.');return}
+  currentUser={name:email.split('@')[0],email,mode:'demo'};
+  persistCurrentUser();
+  updateNavAuth();
+  closeModal();
+  clearAuthFields();
+  setAppStatus('Demo sign-in is active in this browser only. No server account was created.', 'info');
+  showToast('Demo sign-in successful.');
 }
 function doSignup(){
   const name=document.getElementById('signup-name').value.trim();
   const email=document.getElementById('signup-email').value.trim();
   const pass=document.getElementById('signup-password').value;
   if(!name||!email||!pass){showToast('Please fill in all fields.');return}
+  if(!isValidEmail(email)){showToast('Please enter a valid email address.');return}
   if(pass.length<8){showToast('Password must be at least 8 characters.');return}
-  currentUser={name,email};
-  updateNavAuth();closeModal();showToast('Account created! Welcome, '+name+'!');
+  currentUser={name,email,mode:'demo'};
+  persistCurrentUser();
+  updateNavAuth();
+  closeModal();
+  clearAuthFields();
+  setAppStatus('Demo account created in this browser. No server-side registration is configured yet.', 'info');
+  showToast('Demo account created successfully.');
 }
 function googleAuth(){
-  currentUser={name:'Google User',email:'user@gmail.com'};
-  updateNavAuth();closeModal();showToast('Signed in with Google!');
+  currentUser={name:'Demo User',email:'demo@resumefriendly.local',mode:'demo'};
+  persistCurrentUser();
+  updateNavAuth();
+  closeModal();
+  setAppStatus('Demo access is active in this browser only. Google sign-in is not configured on the server.', 'info');
+  showToast('Demo access enabled.');
 }
-function logout(){currentUser=null;updateNavAuth();showToast('Logged out successfully.')}
+function logout(){currentUser=null;clearStoredUser();updateNavAuth();setAppStatus('You have signed out of demo mode on this browser.', 'info');showToast('Logged out successfully.')}
 function updateNavAuth(){
   const nav=document.getElementById('nav-auth');
   if(currentUser){
-    const initials=currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const initials=(currentUser.name||'DU').split(' ').map((w)=>w[0]).join('').toUpperCase().slice(0,2);
     nav.innerHTML=`<div class="user-badge"><div class="user-avatar">${initials}</div><span>${currentUser.name}</span><button class="btn-logout" onclick="logout()">Log out</button></div>`;
   } else {
-    nav.innerHTML=`<div class="nav-auth"><button class="btn-login" onclick="openModal('login')">Log in</button><button class="btn-signup" onclick="openModal('signup')">Sign up free</button></div>`;
+    nav.innerHTML=`<button class="btn-login" onclick="openModal('login')">Log in</button><button class="btn-signup" onclick="openModal('signup')">Sign up free</button>`;
   }
 }
 
-/* FILE UPLOAD */
 function handleFileSelect(e){const f=e.target.files[0];if(f)processFile(f)}
 function handleDragOver(e){e.preventDefault();document.getElementById('upload-box').classList.add('dragging')}
 function handleDragLeave(){document.getElementById('upload-box').classList.remove('dragging')}
@@ -604,17 +700,18 @@ function arrayBufferToBase64(buffer){
   return btoa(binary);
 }
 async function processFile(file){
-  if(!/\.(pdf|doc|docx|txt)$/i.test(file.name)){showToast('Please upload a PDF, DOC, DOCX, or TXT resume.');return}
-  if(file.size>MAX_RESUME_FILE_BYTES){showToast('Please upload a resume smaller than 5 MB.');return}
+  if(!/\.(pdf|doc|txt)$/i.test(file.name)){showToast('Please upload a PDF, DOC, or TXT resume.');setAppStatus('Unsupported file format. Use PDF, DOC, or TXT.', 'error');return}
+  if(file.size>MAX_RESUME_FILE_BYTES){showToast('Please upload a resume smaller than 5 MB.');setAppStatus('The uploaded file is too large. Keep it under 5 MB.', 'error');return}
+  clearAppStatus();
   try{
     const buffer=await file.arrayBuffer();
-    const res=await fetch('/api/extract-resume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({filename:file.name,fileDataBase64:arrayBufferToBase64(buffer)})});
-    const payload=await res.json().catch(()=>({}));
-    if(!res.ok){throw new Error(payload.error||'Could not read that file.')}
+    const payload=await requestJson('/api/extract-resume',{filename:file.name,fileDataBase64:arrayBufferToBase64(buffer)},'Could not read that resume file.');
     if(!payload.text||payload.text.length<50){throw new Error('Could not extract enough text from that resume.')}
     resumeText=payload.text;
     setUploadFilled(file.name);
+    setAppStatus('Resume text extracted successfully. You can now run optimisation.', 'success');
   }catch(error){
+    setAppStatus(error.message||'Could not read that resume file.', 'error');
     showToast(error.message||'Could not read that resume file.');
   }
 }
@@ -622,15 +719,13 @@ function setUploadFilled(filename){
   document.getElementById('upload-box').className='upload-box filled';
   document.getElementById('lbl-resume').className='field-label filled';
   document.getElementById('hint-resume').className='ta-hint filled';
-  document.getElementById('hint-resume').textContent='Resume uploaded ✓';
+  document.getElementById('hint-resume').textContent='Resume uploaded successfully';
   document.getElementById('upload-title').textContent='Resume uploaded';
   document.getElementById('upload-sub').textContent='Click to change file';
-  document.getElementById('hint-resume').textContent='Resume uploaded successfully';
   const fn=document.getElementById('upload-file-name');
   fn.textContent=filename;fn.style.display='block';
 }
 
-/* JOB TEXTAREA */
 function handleJobFocus(){jobFocused=true;const v=document.getElementById('job-input').value.trim();if(!v)document.getElementById('wrap-job').className='ta-outer focused'}
 function handleJobBlur(){jobFocused=false;const v=document.getElementById('job-input').value.trim();document.getElementById('wrap-job').className=v?'ta-outer filled':'ta-outer empty'}
 function handleJobInput(){
@@ -638,49 +733,47 @@ function handleJobInput(){
   document.getElementById('wrap-job').className=v?'ta-outer filled':(jobFocused?'ta-outer focused':'ta-outer empty');
   document.getElementById('lbl-job').className=v?'field-label filled':'field-label empty';
   document.getElementById('hint-job').className=v?'ta-hint filled':'ta-hint empty';
-  document.getElementById('hint-job').textContent=v?'Job description ready ✓':'Paste the job description here...';
+  document.getElementById('hint-job').textContent=v?'Job description ready':'Paste the job description here...';
 }
 
-/* SAMPLE */
-const CLEAN_SAMPLE_RESUME=`Alex Johnson\nalex@email.com | +91 98765 43210\n\nEXPERIENCE\nSoftware Engineer - Acme Corp (2021-2024)\n- Improved backend services for customer-facing workflows\n- Supported SQL reporting and database maintenance work\n- Participated in peer code reviews and release testing\n\nEDUCATION\nB.Tech Computer Science - VIT University (2021)\n\nSKILLS\nPython, SQL, Git, Cloud`;
-const CLEAN_SAMPLE_JOB=`Senior Backend Engineer\n- 3+ years Python experience\n- Strong SQL and PostgreSQL skills\n- AWS or GCP cloud experience\n- CI/CD pipelines and code reviews\n- Design and scale distributed systems`;
-const SAMPLE_RESUME=`Alex Johnson\nalex@email.com | +91 98765 43210\n\nEXPERIENCE\nSoftware Engineer — Acme Corp (2021–2024)\n• Worked on backend systems\n• Helped with database tasks\n• Participated in code reviews\n\nEDUCATION\nB.Tech Computer Science — VIT University (2021)\n\nSKILLS\nPython, SQL, Git, Cloud`;
-const SAMPLE_JOB=`Senior Backend Engineer\n• 3+ years Python experience\n• Strong SQL and PostgreSQL skills\n• AWS or GCP cloud experience\n• CI/CD pipelines and code reviews\n• Design and scale distributed systems`;
 function loadSample(){
-  resumeText=CLEAN_SAMPLE_RESUME;setUploadFilled('sample-resume.txt');
-  document.getElementById('job-input').value=CLEAN_SAMPLE_JOB;handleJobInput();
-  scrollToApp();showToast('Sample resume and job loaded!');
+  resumeText=CLEAN_SAMPLE_RESUME;
+  setUploadFilled('sample-resume.txt');
+  document.getElementById('job-input').value=CLEAN_SAMPLE_JOB;
+  handleJobInput();
+  setAppStatus('Sample resume loaded. Run optimisation to test the full flow.', 'info');
+  scrollToApp();
+  showToast('Sample resume and job loaded!');
 }
 
-/* OPTIMISE */
 async function optimise(){
   const job=document.getElementById('job-input').value.trim();
-  if(!resumeText){showToast('Please upload your resume first.');return}
-  if(!job){showToast('Please paste a job description.');return}
+  if(!resumeText){setAppStatus('Upload a resume before running optimisation.', 'error');showToast('Please upload your resume first.');return}
+  if(!job){setAppStatus('Paste a job description before running optimisation.', 'error');showToast('Please paste a job description.');return}
   const btn=document.getElementById('run-btn');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Optimising your resume...';
+  clearAppStatus();
   try{
-    const res=await fetch('/api/optimise',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({resume:resumeText,job})});
-    const payload=await res.json().catch(()=>({}));
-    if(!res.ok){throw new Error(payload.error||'Server error')}
+    const payload=await requestJson('/api/optimise',{resume:resumeText,job},'The optimise request failed.');
     document.getElementById('sc-before').textContent=Math.round(payload.ats_before);
     document.getElementById('sc-after').textContent=Math.round(payload.ats_after);
     document.getElementById('sc-kw').textContent=Math.round(payload.keyword_match)+'%';
     document.getElementById('output-area').textContent=payload.optimised_resume;
     const rb=document.getElementById('result-box');rb.className='result-box visible';
     rb.scrollIntoView({behavior:'smooth',block:'nearest'});
+    setAppStatus('Resume optimisation completed successfully.', 'success');
     showToast('Resume optimised successfully!');
-  }catch(err){
-    showToast(err.message||'Something went wrong. Please try again.');
+  }catch(error){
+    setAppStatus(error.message||'The optimise request failed.', 'error');
+    showToast(error.message||'The optimise request failed.');
   }finally{
     btn.disabled=false;btn.innerHTML='Optimise my resume';
   }
 }
 
-/* DOWNLOAD */
 function downloadTxt(){
   const text=document.getElementById('output-area').textContent;
-  if(!text){showToast('Please optimise your resume first.');return}
+  if(!text){setAppStatus('Optimise a resume before downloading.', 'error');showToast('Please optimise your resume first.');return}
   const link=document.createElement('a');
   link.href='data:text/plain;charset=utf-8,'+encodeURIComponent(text);
   link.download='resumefriendly-optimised.txt';
@@ -689,55 +782,37 @@ function downloadTxt(){
 }
 async function buyDownload(format){
   const text=document.getElementById('output-area').textContent;
-  if(!text){showToast('Please optimise your resume first.');return}
-  if(!paymentEnabled||!razorpayKeyId){showToast('Paid exports are not configured yet. Add Razorpay keys on the server first.');return}
-  if(typeof window.Razorpay!=='function'){showToast('Payment widget failed to load. Please refresh and try again.');return}
+  if(!text){setAppStatus('Optimise a resume before exporting it.', 'error');showToast('Please optimise your resume first.');return}
+  if(!paymentEnabled||!razorpayKeyId){setAppStatus('Paid exports are disabled because Razorpay is not configured correctly.', 'error');showToast('Paid exports are not configured yet.');return}
+  if(typeof window.Razorpay!=='function'){setAppStatus('Razorpay checkout failed to load in the browser.', 'error');showToast('Payment widget failed to load.');return}
   try{
-    {
-      const orderRes=await fetch('/api/payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({format})});
-      const order=await orderRes.json().catch(()=>({}));
-      if(!orderRes.ok){throw new Error(order.error||'Could not create payment order.')}
-      const label=format==='pdf'?'PDF export':'Word export';
-      const rzp=new window.Razorpay({
-        key:razorpayKeyId,
-        order_id:order.id,
-        amount:order.amount,
-        currency:order.currency||'INR',
-        name:'ResumeFriendly',
-        description:label,
-        handler:function(){
-          if(format==='pdf'){
-            showToast('Payment successful. Opening PDF export...');
-            renderPdfExport(text);
-          }else{
-            showToast('Payment successful. Downloading Word file...');
-            generateWordDoc(text);
-          }
-        },
-        theme:{color:'#185FA5'},
-        modal:{ondismiss:function(){showToast('Payment cancelled.')}}
-      });
-      rzp.on('payment.failed',function(){showToast('Payment failed. Please try again.')});
-      rzp.open();
-      return;
-    }
-
-    const orderRes=await fetch('/api/payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({format})});
-    const order=await orderRes.json();
-    const rzp=new Razorpay({key:RAZORPAY_KEY,order_id:order.id,amount:order.amount,currency:'INR',name:'ResumeFriendly',description:'Resume Download — '+format.toUpperCase(),handler:function(){showToast('Payment successful! Downloading...');format==='pdf'?generatePDF(t):generateDOCX(t)},theme:{color:'#185FA5'},modal:{ondismiss:function(){showToast('Payment cancelled.')}}});
-    rzp.on('payment.failed',function(){showToast('Payment failed. Please try again.')});rzp.open();
-  }catch(e){showToast('Could not initiate payment. Please try again.')}
-}
-function generatePDF(text){
-  const escapedText=escapeHtmlText(text);
-  const popup=window.open('','_blank');
-  if(!popup){showToast('Please allow popups to export your PDF.');return}
-  popup.document.write(`<!DOCTYPE html><html><head><title>ResumeFriendly Export</title><style>body{font-family:Arial,sans-serif;font-size:12px;line-height:1.6;padding:2cm;max-width:800px;margin:0 auto}pre{white-space:pre-wrap;font-family:Arial,sans-serif}</style></head><body><pre>${escapedText}</pre><script>window.onload=function(){window.print()}<\/script></body></html>`);
-  popup.document.close();
-  return;
-  const w=window.open('','_blank');
-  w.document.write('<!DOCTYPE html><html><head><title>ResumeFriendly</title><style>body{font-family:Arial,sans-serif;font-size:12px;line-height:1.6;padding:2cm;max-width:800px;margin:0 auto}pre{white-space:pre-wrap;font-family:Arial,sans-serif}</style></head><body><pre>'+text+'</pre><script>window.onload=function(){window.print();window.close()}<\/script></body></html>');
-  w.document.close();
+    const order=await requestJson('/api/payment',{format},'Could not create payment order.');
+    const label=format==='pdf'?'PDF export':'Word export';
+    const rzp=new window.Razorpay({
+      key:razorpayKeyId,
+      order_id:order.id,
+      amount:order.amount,
+      currency:order.currency||'INR',
+      name:'ResumeFriendly',
+      description:label,
+      handler:function(){
+        if(format==='pdf'){
+          showToast('Payment successful. Opening PDF export...');
+          generatePDF(text);
+        }else{
+          showToast('Payment successful. Downloading Word file...');
+          generateWordDoc(text);
+        }
+      },
+      theme:{color:'#185FA5'},
+      modal:{ondismiss:function(){showToast('Payment cancelled.')}}
+    });
+    rzp.on('payment.failed',function(){setAppStatus('Razorpay reported a payment failure. Please try again.', 'error');showToast('Payment failed. Please try again.')});
+    rzp.open();
+  }catch(error){
+    setAppStatus(error.message||'Could not initiate payment.', 'error');
+    showToast(error.message||'Could not initiate payment.');
+  }
 }
 function escapeHtmlText(value){
   return value
@@ -746,6 +821,13 @@ function escapeHtmlText(value){
     .replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;')
     .replace(/'/g,'&#39;');
+}
+function generatePDF(text){
+  const escapedText=escapeHtmlText(text);
+  const popup=window.open('','_blank');
+  if(!popup){setAppStatus('The browser blocked the PDF popup window. Allow popups and try again.', 'error');showToast('Please allow popups to export your PDF.');return}
+  popup.document.write(`<!DOCTYPE html><html><head><title>ResumeFriendly Export</title><style>body{font-family:Arial,sans-serif;font-size:12px;line-height:1.6;padding:2cm;max-width:800px;margin:0 auto}pre{white-space:pre-wrap;font-family:Arial,sans-serif}</style></head><body><pre>${escapedText}</pre><script>window.onload=function(){window.print()}<\/script></body></html>`);
+  popup.document.close();
 }
 function generateWordDoc(text){
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ResumeFriendly Export</title></head><body><pre style="white-space:pre-wrap;font-family:Arial,sans-serif;">${escapeHtmlText(text)}</pre></body></html>`;
@@ -757,23 +839,13 @@ function generateWordDoc(text){
   link.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
-function renderPdfExport(text){
-  generatePDF(text);
-}
-function generateDOCX(text){
-  generateWordDoc(text);
-  return;
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/msword'}));a.download='resumefriendly-optimised.docx';a.click();
-}
 
-/* FAQ */
 function toggleFaq(btn){
   const item=btn.closest('.faq-item');const isOpen=item.classList.contains('open');
-  document.querySelectorAll('.faq-item.open').forEach(el=>el.classList.remove('open'));
+  document.querySelectorAll('.faq-item.open').forEach((el)=>el.classList.remove('open'));
   if(!isOpen)item.classList.add('open');
 }
 
-/* TOAST */
 let tt;
 function showToast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');

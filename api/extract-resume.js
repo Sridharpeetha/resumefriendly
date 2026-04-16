@@ -2,7 +2,7 @@ import pdfParse from 'pdf-parse';
 import WordExtractor from 'word-extractor';
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
-const SUPPORTED_EXTENSIONS = new Set(['txt', 'pdf', 'doc', 'docx']);
+const SUPPORTED_EXTENSIONS = new Set(['txt', 'pdf', 'doc']);
 const wordExtractor = new WordExtractor();
 
 function getExtension(filename = '') {
@@ -33,7 +33,13 @@ async function extractTextFromWord(buffer) {
 
 async function extractTextFromPdf(buffer) {
   const result = await pdfParse(buffer);
-  return normaliseText(result?.text || '');
+  const text = normaliseText(result?.text || '');
+
+  if (!text) {
+    throw new Error('This PDF does not contain selectable text. It may be a scanned image.');
+  }
+
+  return text;
 }
 
 async function extractText(buffer, extension) {
@@ -45,7 +51,7 @@ async function extractText(buffer, extension) {
     return extractTextFromPdf(buffer);
   }
 
-  if (extension === 'doc' || extension === 'docx') {
+  if (extension === 'doc') {
     return extractTextFromWord(buffer);
   }
 
@@ -66,7 +72,7 @@ export default async function handler(req, res) {
   }
 
   if (!SUPPORTED_EXTENSIONS.has(extension)) {
-    return res.status(400).json({ error: 'Unsupported file format. Use PDF, DOC, DOCX, or TXT.' });
+    return res.status(400).json({ error: 'Unsupported file format. Use PDF, DOC, or TXT.' });
   }
 
   try {
@@ -89,6 +95,13 @@ export default async function handler(req, res) {
     return res.status(200).json({ text });
   } catch (error) {
     console.error('Resume extraction error:', error);
-    return res.status(500).json({ error: 'Could not read that resume file. Try PDF, DOC, DOCX, or TXT.' });
+
+    if (/scanned image/i.test(error.message || '')) {
+      return res.status(400).json({
+        error: 'This PDF looks like a scanned image, so no text could be extracted. Use a text-based PDF, DOC, or TXT file.'
+      });
+    }
+
+    return res.status(500).json({ error: 'Could not read that resume file. Try PDF, DOC, or TXT.' });
   }
 }

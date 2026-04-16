@@ -8,7 +8,7 @@ export default function handler(req, res) {
   return res.status(200).json({
     paymentEnabled: Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET),
     razorpayKeyId: process.env.RAZORPAY_KEY_ID || '',
-    supportedUploadFormats: ['pdf', 'doc', 'docx', 'txt'],
+    supportedUploadFormats: ['pdf', 'doc', 'txt'],
     paidDownloadFormats: ['pdf', 'doc']
   });
 }
